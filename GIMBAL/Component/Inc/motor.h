@@ -1,13 +1,10 @@
-//
-// Created by Yuanbin on 22-10-3.
-//
-
 #ifndef MOTOR_H
 #define MOTOR_H
 
 #include "stdint.h"
 #include "stdbool.h"
 #include "robot_ref.h"
+#include "pid.h"
 
 /* 异常情况枚举 */
 typedef enum
@@ -41,55 +38,21 @@ typedef struct
 	
 }General_Motor_Info_t;
 
-#if defined(CHASSIS_BOARD)
 /* DJI电机用途枚举 */
-typedef enum{
-		Yaw_Motor,
-		Left_Momentum,
-		Right_Momentum,
-    DJI_MOTOR_NUM,
-}DJI_Motor_usage_e;
-
-/* RMD电机用途枚举 */
-typedef enum{
-		Left_Wheel,
-		Right_Wheel,
-    RMD_MOTOR_NUM,
-}RMD_Motor_usage_e;
-
-/* RMD电机类型枚举 */
-typedef enum{
-	  RMD_L9025,
-    RMD_MOTOR_TYPE_NUM,
-}RMD_Motor_Type_e;
-
-/* RMD_L_9025电机封装 */
-typedef struct
+typedef enum
 {
-		int8_t order;
-		General_Motor_Info_t Data;
-    RMD_Motor_Type_e Type;
-		Motor_ErrorHandler_t ERRORHandler;
-}RMD_L9025_Info_t;
-
-#endif
-
-#if defined(GIMBAL_BOARD)
-/* DJI电机用途枚举 */
-typedef enum{
-		Pitch_Motor,
-		Yaw_Motor,
-		Left_Friction,
-		Right_Friction,
+		Gimbal_Yaw,
+		Gimbal_Pitch,
+		Left_Shoot,
+		Right_Shoot,
 		Trigger,
-    DJI_MOTOR_NUM,
+		DJI_MOTOR_NUM,
+	
 }DJI_Motor_usage_e;
-
-#endif
-
 
 /* DJI电机类型枚举 */
-typedef enum{
+typedef enum
+{
     DJI_GM6020,
     DJI_M3508,
     DJI_M2006,
@@ -101,22 +64,16 @@ typedef struct
 {
 		General_Motor_Info_t Data;
     DJI_Motor_Type_e Type;
+		DJI_Motor_usage_e Usage;
+	  PID_TypeDef_t pid_Speed,pid_Angle;
 		Motor_ErrorHandler_t ERRORHandler;
 }DJI_Motor_Info_t;
 
-#if defined(CHASSIS_BOARD)
-extern RMD_L9025_Info_t MT9025[2];
-extern DJI_Motor_Info_t YawMotor;
-#endif
-#if defined(GIMBAL_BOARD)
-extern DJI_Motor_Info_t Gimbal_Motor[DJI_MOTOR_NUM];
-#endif
+
 
 /* Exported functions --------------------------------------------------------*/
 extern void get_DJI_Motor_Info(uint32_t *StdId, uint8_t *rxBuf,DJI_Motor_Info_t *DJI_Motor);
-#if defined(CHASSIS_BOARD)
-extern void get_RMD_Motor_Info(uint32_t *StdId, uint8_t *rxBuf,RMD_L9025_Info_t *RMD_Motor);
-#endif
+extern DJI_Motor_Info_t DJI_Motor[DJI_MOTOR_NUM];
 
 #endif //MOTOR_H
 

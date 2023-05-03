@@ -3,7 +3,6 @@
 //
 #include "robot_ref.h"
 
-#if defined(GIMBAL_BOARD)
 
 #include "shoot.h"
 
@@ -21,7 +20,6 @@ float Temp_Fix_speed(uint16_t real_speed)
   float temp_scope = 50;//假设变化范围为50摄氏度
   float temp_low = 35;//初始温度设定为35摄氏度
   float res = 0;
-  float temp_real= (float)(Gimbal_Motor[Left_Friction].Data.temperature + Gimbal_Motor[Right_Friction].Data.temperature)/2.f;
   float speed_bap = 0;
   
   if(13.5f<real_speed<=15.f)
@@ -34,15 +32,7 @@ float Temp_Fix_speed(uint16_t real_speed)
   {
 	speed_bap = -170.f;
   }
-  
-  if(temp_real >= temp_low)
-    res = (temp_real - temp_low)/temp_scope * (-speed_bap);
-  if(temp_real < temp_low)
-    res = 0;
-  if(temp_real > temp_low + temp_scope)
-    res = -speed_bap;
-
-	return res;
+  	return res;
 }
 
 float SpeedAdapt(float real_S , float min_S, float max_S,float up_num , float down_num)
@@ -70,11 +60,3 @@ bool Judge_IF_SingeStuck(float angle_err)
 	
 	return false;
 }
-bool Judge_IF_AutoBlock(float speed_err)
-{
-	if(ABS(speed_err) > 500 && ABS(Gimbal_Motor[Trigger].Data.velocity) < 300)return true;
-	
-	return false;
-}
-
-#endif

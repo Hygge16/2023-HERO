@@ -15,17 +15,6 @@
 
 #define Euler_Number 2.718281828459045f
 
-//以队列的形式求差分
-QueueDiff_t Wheelspeed_Diff[2] = {
-	[Left_Wheel] = {
-		.queueLength = 10,
-	},
-	[Right_Wheel] = {
-		.queueLength = 10,
-	},
-};
-
-
 static float ramp_float( float final, float now, float ramp );
 static float speed_control(float speed_in,Chassis_Info_t *Chassis_Info);
 
@@ -61,58 +50,6 @@ void chassis_mode_set(Chassis_Info_t *Chassis_Info)
 		}
 }
 
-/**
-  * @brief          底盘信息更新
-  * @param[out]     Chassis_Info_update:底盘信息变量指针.
-  * @retval         none
-  */
-void Chassis_Info_update(Chassis_Info_t *Chassis_Info)
-{
-		if(Chassis_Info == NULL) return;
-	
-		//更新底盘航向角
-		Chassis_Info->Measure.yaw_angle = f_encoder_to_angle(&YawMotor.Data.encoder,8192.f);
-		Chassis_Info->Measure.yaw_gyro  = (float)YawMotor.Data.velocity*DJIGM6020_RPM_TO_OMEGA;
-		Chassis_Info->Measure.yaw_err   = f_angle_conversion(Chassis_Info->Target.yaw_angle[Chassis_Info->IF_YAW_ANGLE_OFFSET],Chassis_Info->Measure.yaw_angle,180);
-
-		if(CHASSIS_WEEK != Chassis_Info->mode)
-		{
-			Chassis_Info->Target.linespeed = fabs(arm_cos_f32(Chassis_Info->Measure.yaw_err/180.f*PI))*speed_control(-Chassis_Info->rc_ctrl->rc.ch[3]*0.4f-(Key_W()-Key_S())*Chassis_Info->Max.linespeed,Chassis_Info);
-			VAL_LIMIT(Chassis_Info->Target.linespeed,-Chassis_Info->Max.linespeed,Chassis_Info->Max.linespeed);
-		}
-		//小陀螺模式，偏置期望角
-		if(Chassis_Info->mode == CHASSIS_FLY)
-		{
-				Chassis_Info->IF_PIT_ANGLE_OFFSET = true;
-		}else{
-				Chassis_Info->IF_YAW_ANGLE_OFFSET = false;
-				Chassis_Info->IF_PIT_ANGLE_OFFSET = false;
-		}
-		
-		//更新小陀螺转速，暂为定值，后续优化
-		if(Chassis_Info->mode == CHASSIS_SPIN && Chassis_Info->Target.yaw_gyro == 0) 
-		{
-			Chassis_Info->Target.yaw_gyro = -60;
-		}
-		
-		//驱动轮转速(DPS)转化成底盘线速度(cm/s)
-		Chassis_Info->Measure.linespeed = (float)(-MT9025[Left_Wheel].Data.velocity + MT9025[Right_Wheel].Data.velocity)/2.f*MOTOR_RPM_TO_LINE_SPEED*100.f;
-		
-		//以差分形式获取驱动轮加速度(cm/s^2)
-		Chassis_Info->Measure.Wheelaccel[Left_Wheel] = f_get_diff(2,&Wheelspeed_Diff[Left_Wheel], -MT9025[Left_Wheel].Data.velocity * MOTOR_RPM_TO_LINE_SPEED*100.f)*1000;
-		Chassis_Info->Measure.Wheelaccel[Right_Wheel]= f_get_diff(2,&Wheelspeed_Diff[Right_Wheel], MT9025[Right_Wheel].Data.velocity* MOTOR_RPM_TO_LINE_SPEED*100.f)*1000;
-
-		if(Chassis_Info->Target.linespeed <= 1)
-		{
-				//底盘线速度积分位移(cm)
-				Chassis_Info->Measure.position -= Chassis_Info->Measure.position/1000.f;
-				//底盘位移限幅
-				VAL_LIMIT(Chassis_Info->Measure.position,-Chassis_Info->Max.position,Chassis_Info->Max.position);	
-		}else
-		{
-				Chassis_Info->Measure.position = 0;
-		}
-}
 
 ///**
 //*	@brief	速度控制

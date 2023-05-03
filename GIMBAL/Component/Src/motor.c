@@ -4,76 +4,38 @@
 #include "motor.h"
 #include "pid.h"
 
-#if defined(CHASSIS_BOARD)
-RMD_L9025_Info_t MT9025[2]=
-{
-	[Left_Wheel] = {
-			.Data={
-				.CANx = CAN1,
-				.StdId = 0x244,
-			},
-			.Type = RMD_L9025,
-	},
-	[Right_Wheel] = {
-			.Data={
-				.CANx = CAN1,
-				.StdId = 0x243,
-			},
-			.Type = RMD_L9025,
-	},
-};
-
-DJI_Motor_Info_t YawMotor={
-			.Data={
-				.CANx = CAN2,
-				.StdId = 0x205,
-			},
-			.Type = DJI_GM6020,
-};
-#endif
-
-#if defined(GIMBAL_BOARD)
-
-	DJI_Motor_Info_t Gimbal_Motor[DJI_MOTOR_NUM]=
-	{
-			[Pitch_Motor] = {
-				.Data={
-					.CANx = CAN1,
-					.StdId = 0x206,
-				},
+DJI_Motor_Info_t DJI_Motor[DJI_MOTOR_NUM]={
+		[Gimbal_Yaw]={
+				.Data.StdId = 0x205,
+				.Data.CANx = CAN2,
 				.Type = DJI_GM6020,
-			},
-			[Yaw_Motor] = {
-				.Data={
-					.CANx = CAN2,
-					.StdId = 0x205,
-				},
+		},
+		
+		[Gimbal_Pitch]={
+				.Data.StdId = 0x206,
+				.Data.CANx = CAN1,
 				.Type = DJI_GM6020,
-			},
-			[Left_Friction] = {
-				.Data={
-					.CANx = CAN1,
-					.StdId = 0x201,
-				},
+		},
+		
+		[Left_Shoot]={
+				.Data.StdId = 0x201,
+				.Data.CANx = CAN1,
 				.Type = DJI_M3508,
-			},
-			[Right_Friction] = {
-				.Data={
-					.CANx = CAN1,
-					.StdId = 0x202,
-				},
+		},
+				
+		[Right_Shoot]={
+				.Data.StdId = 0x202,
+				.Data.CANx = CAN1,
 				.Type = DJI_M3508,
-			},
-			[Trigger] = {
-				.Data={
-					.CANx = CAN1,
-					.StdId = 0x203,
-				},
-				.Type = DJI_M2006,
-			},
-	};
-#endif
+		},
+						
+		[Trigger]={
+				.Data.StdId = 0x208,
+				.Data.CANx = CAN2,
+				.Type = DJI_M3508,
+		},
 
+};
 /**
   * @brief  transform the encoder(0-8192) to anglesum(3.4E38)
   * @param  *Info        pointer to a General_Motor_Info_t structure that 
@@ -265,27 +227,3 @@ void get_DJI_Motor_Info(uint32_t *StdId, uint8_t *rxBuf,DJI_Motor_Info_t *DJI_Mo
 	}
 }
 
-#if defined(CHASSIS_BOARD)
-/**
-  * @brief  transform the RMD motor receive data
-  * @param  StdId  specifies the standard identifier.
-  * @param  *rxBuf can receive memory address
-  * @param  *RMD_Motor pointer to a RMD_L9025_Info_t structure that contains the information of RMD motor
-  * @retval None
-  */
-void get_RMD_Motor_Info(uint32_t *StdId, uint8_t *rxBuf,RMD_L9025_Info_t *RMD_Motor)
-{
-	/* check the StdId */
-	if(*StdId != RMD_Motor->Data.StdId) return;
-	
-	RMD_Motor->order = rxBuf[0];
-	
-	/* transforms the  general motor data */
-	RMD_Motor->Data.temperature = rxBuf[1];
-	RMD_Motor->Data.current  = ((int16_t)(rxBuf[2]) | (int16_t)(rxBuf[3]<<8));
-	RMD_Motor->Data.velocity = ((int16_t)(rxBuf[4]) | (int16_t)(rxBuf[5]<<8));
-	RMD_Motor->Data.encoder  = ((int16_t)(rxBuf[6]) | (int16_t)(rxBuf[7]<<8));
-	
-	RMD_Motor->Data.angle = encoder_to_anglesum(&RMD_Motor->Data,1.f,32768);
-}
-#endif

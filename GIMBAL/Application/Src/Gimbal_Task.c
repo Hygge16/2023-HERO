@@ -4,8 +4,6 @@
 
 #include "robot_ref.h"
 
-#if defined(GIMBAL_BOARD)
-
 #include "cmsis_os.h"
 
 #include "Gimbal_Task.h"
@@ -15,7 +13,7 @@
 #include "motor.h"
 #include "bsp_can.h"
 
-//deadband,maxIntegral,max_out,kp,ki,kd
+//deadband, maxIntegral, max_out, kp, ki, kd
 float f_gimbal_Pid_Para[2][2][PID_PARAMETER_CNT]={
 	[0]={
 		[0]={0.f,0.f,5000.f,44.f,0.f,0.f,},
@@ -55,23 +53,11 @@ static void chassis_send_current(Gimbal_Info_t *Gimbal_Info_send,CAN_TxFrameType
 void Gimbal_Task(void const * argument)
 {
   /* USER CODE BEGIN Gimbal_Task */
-	
 	gimbal_init();
   /* Infinite loop */
   for(;;)
   {
-		//云台模式设置
-		gimbal_mode_set(&Gimbal_Ctrl);
-		
-		//云台信息更新
-		gimbal_Info_update(&Gimbal_Ctrl);
-		
-		//云台姿态控制
-		gimbal_posture_ctrl(&Gimbal_Ctrl);
-		
-		//云台控制电流发生
-		chassis_send_current(&Gimbal_Ctrl,GimbalTxFrame);
-		
+
     osDelay(1);
   }
   /* USER CODE END Gimbal_Task */
@@ -85,10 +71,10 @@ void Gimbal_Task(void const * argument)
 static void gimbal_init(void)
 {
 	//PID Init
-	PID_Init(&Gimbal_PID[Pitch_Motor][0],PID_POSITION,f_gimbal_Pid_Para[Pitch_Motor][0]);
-	PID_Init(&Gimbal_PID[Pitch_Motor][1],PID_POSITION,f_gimbal_Pid_Para[Pitch_Motor][1]);
-	PID_Init(&Gimbal_PID[Yaw_Motor][0]  ,PID_POSITION,f_gimbal_Pid_Para[Yaw_Motor][0]);
-	PID_Init(&Gimbal_PID[Yaw_Motor][1]  ,PID_POSITION,f_gimbal_Pid_Para[Yaw_Motor][1]);
+	PID_Init(&Gimbal_PID[Gimbal_Pitch][0],PID_POSITION,f_gimbal_Pid_Para[Gimbal_Pitch][0]);
+	PID_Init(&Gimbal_PID[Gimbal_Pitch][1],PID_POSITION,f_gimbal_Pid_Para[Gimbal_Pitch][1]);
+	PID_Init(&Gimbal_PID[Gimbal_Yaw][0]  ,PID_POSITION,f_gimbal_Pid_Para[Gimbal_Yaw][0]);
+	PID_Init(&Gimbal_PID[Gimbal_Yaw][1]  ,PID_POSITION,f_gimbal_Pid_Para[Gimbal_Yaw][1]);
 }
 
 
@@ -102,18 +88,18 @@ static void gimbal_posture_ctrl(Gimbal_Info_t *Gimbal_Info_control)
 		if(Gimbal_Info_control == NULL) return ;
 		
 		//更新期望角速度
-		Gimbal_Info_control->Target.pit_gyro = f_PID_Calculate(&Gimbal_PID[Pitch_Motor][0],Gimbal_Info_control->Target.pit_angle,*Gimbal_Info_control->Measure.pit_angle);
-		Gimbal_Info_control->Target.yaw_gyro = f_PID_Calculate(&Gimbal_PID[Yaw_Motor][0],  Gimbal_Info_control->Target.yaw_angle,*Gimbal_Info_control->Measure.yaw_angle);
+		Gimbal_Info_control->Target.pit_gyro = f_PID_Calculate(&Gimbal_PID[Gimbal_Pitch][0],Gimbal_Info_control->Target.pit_angle,*Gimbal_Info_control->Measure.pit_angle);
+		Gimbal_Info_control->Target.yaw_gyro = f_PID_Calculate(&Gimbal_PID[Gimbal_Yaw][0],  Gimbal_Info_control->Target.yaw_angle,*Gimbal_Info_control->Measure.yaw_angle);
 		
 		//更新控制电流值
-		Gimbal_Info_control->SendValue[Pitch_Motor] = f_PID_Calculate(&Gimbal_PID[Pitch_Motor][1],Gimbal_Info_control->Target.pit_gyro,*Gimbal_Info_control->Measure.pit_gyro);
-		Gimbal_Info_control->SendValue[Yaw_Motor] = f_PID_Calculate(&Gimbal_PID[Yaw_Motor][1],  Gimbal_Info_control->Target.yaw_gyro,*Gimbal_Info_control->Measure.yaw_gyro);
+		Gimbal_Info_control->SendValue[Gimbal_Pitch] = f_PID_Calculate(&Gimbal_PID[Gimbal_Pitch][1],Gimbal_Info_control->Target.pit_gyro,*Gimbal_Info_control->Measure.pit_gyro);
+		Gimbal_Info_control->SendValue[Gimbal_Yaw] = f_PID_Calculate(&Gimbal_PID[Gimbal_Yaw][1],  Gimbal_Info_control->Target.yaw_gyro,*Gimbal_Info_control->Measure.yaw_gyro);
 		
 		//云台卸力
 		if(rc_ctrl.rc.s[1]==1 || rc_ctrl.rc.s[1]==0)
 		{
-			Gimbal_Info_control->SendValue[Pitch_Motor] = 0;
-			Gimbal_Info_control->SendValue[Yaw_Motor] = 0;
+			Gimbal_Info_control->SendValue[Gimbal_Pitch] = 0;
+			Gimbal_Info_control->SendValue[Gimbal_Yaw] = 0;
 		}
 }
 
@@ -126,19 +112,12 @@ static void chassis_send_current(Gimbal_Info_t *Gimbal_Info_send,CAN_TxFrameType
 {
 	if(Gimbal_Info_send == NULL || TXFrame == NULL ) return;
 	
-	TXFrame[Pitch_Motor].data[2] = (uint8_t)(Gimbal_Info_send->SendValue[Pitch_Motor] >> 8);
-	TXFrame[Pitch_Motor].data[3] = (uint8_t)(Gimbal_Info_send->SendValue[Pitch_Motor]);
-	TXFrame[Yaw_Motor].data[0]   = (uint8_t)(Gimbal_Info_send->SendValue[Yaw_Motor] >> 8);
-	TXFrame[Yaw_Motor].data[1]   = (uint8_t)(Gimbal_Info_send->SendValue[Yaw_Motor]);
+	TXFrame[Gimbal_Pitch].data[2] = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Pitch] >> 8);
+	TXFrame[Gimbal_Pitch].data[3] = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Pitch]);
+	TXFrame[Gimbal_Yaw].data[0]   = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Yaw] >> 8);
+	TXFrame[Gimbal_Yaw].data[1]   = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Yaw]);
 	
 	//CAN_Transmit
-	USER_CAN_TxMessage(&TXFrame[Pitch_Motor]);
-	USER_CAN_TxMessage(&TXFrame[Yaw_Motor]);
+	USER_CAN_TxMessage(&TXFrame[Gimbal_Pitch]);
+	USER_CAN_TxMessage(&TXFrame[Gimbal_Yaw]);
 }
-
-#endif
-
-
-
-
-

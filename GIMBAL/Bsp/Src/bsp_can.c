@@ -10,77 +10,6 @@
 CAN_RxFrameTypeDef CAN_RxInstance ={0,};
 
 
-#if defined(CHASSIS_BOARD)
-//9025单电机命令CAN发送帧包
-CAN_TxFrameTypeDef MT_hcanTxFrame[2] =  {
-		[Left_Wheel]={
-				.hcan = &hcan1,
-				.header.StdId=0x144,
-				.header.IDE=CAN_ID_STD,
-				.header.RTR=CAN_RTR_DATA,
-				.header.DLC=8,
-		},
-		[Right_Wheel]={
-				.hcan = &hcan1,
-				.header.StdId=0x143,
-				.header.IDE=CAN_ID_STD,
-				.header.RTR=CAN_RTR_DATA,
-				.header.DLC=8,
-		},
-};
-
-CAN_TxFrameTypeDef REFEREE_TxFrame={
-				.hcan = &hcan2,
-				.header.StdId=0x600,
-				.header.IDE=CAN_ID_STD,
-				.header.RTR=CAN_RTR_DATA,
-				.header.DLC=8,
-};
-#endif
-
-#if defined(GIMBAL_BOARD)
-
-CAN_TxFrameTypeDef GimbalTxFrame[3] = {
-		[0]={
-		.hcan = &hcan1,
-		.header.StdId=0x1ff,
-		.header.IDE=CAN_ID_STD,
-		.header.RTR=CAN_RTR_DATA,
-		.header.DLC=8,
-		},
-		[1]={
-		.hcan = &hcan2,
-		.header.StdId=0x1ff,
-		.header.IDE=CAN_ID_STD,
-		.header.RTR=CAN_RTR_DATA,
-		.header.DLC=8,
-		},
-		[2]={
-		.hcan = &hcan1,
-		.header.StdId=0x200,
-		.header.IDE=CAN_ID_STD,
-		.header.RTR=CAN_RTR_DATA,
-		.header.DLC=8,
-		},
-};
-
-CAN_TxFrameTypeDef RBCTxFrame = {
-		.hcan = &hcan2,
-		.header.StdId=0x302,
-		.header.IDE=CAN_ID_STD,
-		.header.RTR=CAN_RTR_DATA,
-		.header.DLC=8,
-};
-
-CAN_TxFrameTypeDef REFEREETxFrame = {
-		.hcan = &hcan2,
-		.header.StdId=0x600,
-		.header.IDE=CAN_ID_STD,
-		.header.RTR=CAN_RTR_DATA,
-		.header.DLC=8,
-};
-#endif
-
 /**
   * @brief  Configures the CAN Module.
   * @param  None
@@ -138,28 +67,14 @@ void USER_CAN_TxMessage(CAN_TxFrameTypeDef *TxHeader)
 
 void CAN1_rxDataHandler(uint32_t *StdID, uint8_t *rxBuf)
 {
-#if defined(CHASSIS_BOARD)
-		get_RMD_Motor_Info(StdID, rxBuf,&MT9025[Left_Wheel]);
-		get_RMD_Motor_Info(StdID, rxBuf,&MT9025[Right_Wheel]);
-#endif
-#if defined(GIMBAL_BOARD)
-		get_DJI_Motor_Info(StdID, rxBuf,&Gimbal_Motor[Pitch_Motor]);
-		get_DJI_Motor_Info(StdID, rxBuf,&Gimbal_Motor[Left_Friction]);
-		get_DJI_Motor_Info(StdID, rxBuf,&Gimbal_Motor[Right_Friction]);
-		get_DJI_Motor_Info(StdID, rxBuf,&Gimbal_Motor[Trigger]);
-#endif	
+		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Gimbal_Pitch]);
+		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Left_Shoot]);
+		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Right_Shoot]);
 }
-
 void CAN2_rxDataHandler(uint32_t *StdID, uint8_t *rxBuf)
 {
-#if defined(CHASSIS_BOARD)
-		get_DJI_Motor_Info(StdID,rxBuf,&YawMotor);
-		get_rc_ctrl_data(StdID,rxBuf,&rc_ctrl);
-#endif
-#if defined(GIMBAL_BOARD)
-		get_DJI_Motor_Info(StdID, rxBuf,&Gimbal_Motor[Yaw_Motor]);
-		get_Referee_Data(StdID,rxBuf);
-#endif	
+		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Gimbal_Yaw]);
+		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Trigger]);
 }
 
 /**

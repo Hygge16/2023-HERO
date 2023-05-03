@@ -88,6 +88,7 @@ typedef struct _PID_TypeDef
 
 extern void PID_Init(PID_TypeDef_t *pid,PIDType_e type,float para[PID_PARAMETER_CNT]);
 extern float f_PID_Calculate(PID_TypeDef_t *pid, float Target,float Measure);
+void PID_Init_ByParamArray(PID_TypeDef_t* pid,float* para);
 #endif
 
 

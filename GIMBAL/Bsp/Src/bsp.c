@@ -9,8 +9,6 @@
 #include "bsp_tim.h"
 #include "bsp_rc.h"
 #include "bsp_can.h"
-#include "bsp_referee.h"
-
 
 #include "BMI088_Driver.h"
 #include "IST8310_Driver.h"
@@ -31,7 +29,6 @@ void BSP_Init(void)
 #endif
 	
 #if defined(CHASSIS_BOARD)
-		referee_receive_init();
 #endif
 	
 		/* config the can module transfer*/

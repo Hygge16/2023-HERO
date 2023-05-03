@@ -20,15 +20,6 @@ typedef struct {
     uint8_t				data[8];
 }CAN_TxFrameTypeDef;
 
-#if defined(CHASSIS_BOARD)
-extern CAN_TxFrameTypeDef MT_hcanTxFrame[2];
-extern CAN_TxFrameTypeDef REFEREE_TxFrame;
-#endif
-
-#if defined(GIMBAL_BOARD)
-extern CAN_TxFrameTypeDef GimbalTxFrame[3];
-extern CAN_TxFrameTypeDef RBCTxFrame;
-#endif
 
 /* Exported functions --------------------------------------------------------*/
 extern void bsp_can_init(void);

@@ -3,7 +3,6 @@
 //
 #include "crc.h"
 #include "bsp_referee.h"
-#include "referee_Info.h"
 #include "bsp_uart.h"
 
 #define REFEREE_DATALENGTH  200

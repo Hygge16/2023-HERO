@@ -34,4 +34,10 @@ gimbal/shoot.o: ..\Component\Src\shoot.c ..\Component\Inc\robot_ref.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
+  ..\Component\Inc\shoot.h ..\Bsp\Inc\bsp_rc.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
+  ..\Component\Inc\referee_Info.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h ..\Bsp\Inc\bsp_can.h \
+  ..\Core\Inc\can.h ..\Core\Inc\main.h ..\Algorithm\Inc\pid.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h ..\Component\Inc\motor.h
