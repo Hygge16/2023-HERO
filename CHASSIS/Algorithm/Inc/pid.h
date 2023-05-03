@@ -65,8 +65,8 @@ typedef struct _PID_TypeDef
 	
 		float Target;
 		float Measure;
-	
-    float Err[3];
+		
+		float Err[3];
 		float Integral;
 
     float Pout;
@@ -84,10 +84,14 @@ typedef struct _PID_TypeDef
 		void (*PID_clear)(
 				struct _PID_TypeDef *pid);
 				
+		float (*f_PID_Calculate)(
+				struct _PID_TypeDef *pid, float , float);
+		
 }PID_TypeDef_t;
 
 extern void PID_Init(PID_TypeDef_t *pid,PIDType_e type,float para[PID_PARAMETER_CNT]);
-extern float f_PID_Calculate(PID_TypeDef_t *pid, float Target,float Measure);
+extern float f_PID_Calculate(PID_TypeDef_t *pid, float Target, float Measure);
+void PID_Init_ByParamArray(PID_TypeDef_t* pid,float* para);
 #endif
 
 

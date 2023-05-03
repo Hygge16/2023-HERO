@@ -6,26 +6,55 @@
 
 #include "stm32f4xx.h"
 #include "bsp_rc.h"
+#include "kalman.h"
+#include "main.h"
+#include "motor.h"
 
 typedef enum
 {
-	CHASSIS_INVA=0x00U, //Ð¶Á¦
-	CHASSIS_FOLO=0X01U, //¸úËæ
+	CHASSIS_INVA=0x00U, //Ð¶  Á¦
+	CHASSIS_FOLO=0X01U, //¸ú  Ëæ
 	CHASSIS_SPIN=0X02U, //Ð¡ÍÓÂÝ
 	CHASSIS_MODE_NUM,
 }Chassis_Mode_e;
 
+
+typedef enum
+{
+  RC_CTRL,     //Ò£¿ØÆ÷Ä£Ê½
+  KEY_CTRL,    //¼üÅÌÄ£Ê½
+  CTRL_MODE_NUM,
+}Chassis_Ctrl_Mode;
+
+#include "chassis.h"
+
 typedef struct
 {
-	Chassis_Mode_e mode;
-	
+	int16_t CH2,CH3;
+  Chassis_Mode_e mode;
+  Chassis_Ctrl_Mode ctrl_mode;
+
 	rc_ctrl_t *rc_ctrl;
 	
 	float vx,vy,vw;
 	uint16_t midangle;
+	extKalman_t KF_FOLO_Angle;
+	float speed[SPEED_TYPE_NUM];
 
 }Chassis_Info_t;
 
+extern Chassis_Info_t Chassis_Ctrl;
 
+void chassis_mode_set(Chassis_Info_t *Chassis_Info);
+void Chassis_AcclerateCurve(float *speed_X,float *speed_Y);
+static float AcclerateCurve(float x , float k);
+static float DecclerateCurve(float x , float k);
+
+void Chassis_Mode_Set(Chassis_Info_t *Chassis_Info);
+void Chassis_Info_Update(Chassis_Info_t *Chassis_Info);
+void Chassis_Reset(Chassis_Info_t *mode);
+void Chassis_Test(void);
+void Chassis_Rc_Ctrl(void);
+void Chassis_Key_Ctrl(void);
 
 #endif //CHASSIS_TASK_H

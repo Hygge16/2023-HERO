@@ -48,6 +48,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define ABS(x) (((x) > 0) ? (x) : -(x))
 
 /* USER CODE END EM */
 
@@ -61,7 +62,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-#define ABS(x) ((x)>0? (x):(-(x))) 
+
 
 /* USER CODE END Private defines */
 

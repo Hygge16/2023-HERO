@@ -1,7 +1,6 @@
 chassis/ahrs_middleware.o: ..\Third_Party\AHRS\Src\AHRS_middleware.c \
   ..\Third_Party\AHRS\Inc\AHRS_MiddleWare.h \
   ..\Third_Party\AHRS\Inc\AHRS.h \
-  ..\Third_Party\AHRS\Inc\AHRS_MiddleWare.h \
   D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
   ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
   ..\Drivers\CMSIS\Include\core_cm4.h \
@@ -36,6 +35,7 @@ chassis/ahrs_middleware.o: ..\Third_Party\AHRS\Src\AHRS_middleware.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ramfunc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h

@@ -12,12 +12,9 @@ chassis/chassis_task.o: ..\Application\Src\Chassis_Task.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
-  ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h \
   ..\Application\Inc\Chassis_Task.h \
   ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h \
   ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f427xx.h \
@@ -47,9 +44,15 @@ chassis/chassis_task.o: ..\Application\Src\Chassis_Task.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ramfunc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
   ..\Bsp\Inc\bsp_rc.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
-  ..\Algorithm\Inc\assist.h ..\Algorithm\Inc\pid.h \
-  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h ..\Component\Inc\motor.h
+  ..\Algorithm\Inc\kalman.h ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h ..\Core\Inc\main.h \
+  ..\Component\Inc\motor.h ..\Algorithm\Inc\pid.h \
+  ..\Component\Inc\chassis.h ..\Algorithm\Inc\filter.h \
+  ..\Algorithm\Inc\assist.h ..\Component\Inc\bsp_pm01_api.h \
+  ..\Core\Inc\can.h ..\Component\Inc\referee_info.h ..\Bsp\Inc\bsp_can.h

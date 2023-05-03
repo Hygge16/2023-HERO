@@ -170,7 +170,7 @@ typedef struct
                           @note: Time Triggered Communication Mode must be enabled.
                           @note: DLC must be programmed as 8 bytes, in order these 2 bytes are sent.
                           This parameter can be set to ENABLE or DISABLE. */
-
+	uint8_t Data[8];
 } CAN_TxHeaderTypeDef;
 
 /**

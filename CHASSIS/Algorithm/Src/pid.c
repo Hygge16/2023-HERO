@@ -24,7 +24,7 @@ static void PID_param_init(PID_TypeDef_t *pid,float para[PID_PARAMETER_CNT])
     pid->param.Kp = para[3];
     pid->param.Ki = para[4];
     pid->param.Kd = para[5];
-
+		
     pid->ERRORHandler.ERRORCount = 0;
     pid->ERRORHandler.ERRORType = PID_ERROR_NONE;
 	
@@ -33,6 +33,12 @@ static void PID_param_init(PID_TypeDef_t *pid,float para[PID_PARAMETER_CNT])
 		pid->Dout = 0;
     pid->Output = 0;
 }
+
+void PID_Init_ByParamArray(PID_TypeDef_t* pid,float* para)
+{
+    PID_param_init(pid,&para[PID_PARAMETER_CNT]);
+}
+
 /**
   * @brief  Clear the specified pid parameters
   * @param  *pid pointer to a PID_TypeDef_t structure that contains
@@ -72,7 +78,7 @@ static void PID_ErrorHandle(PID_TypeDef_t *pid)
   * @param  Measure Measure variable for the pid controller
   * @retval None
   */
-float f_PID_Calculate(PID_TypeDef_t *pid, float Target,float Measure)
+float f_PID_Calculate(PID_TypeDef_t *pid, float Target, float Measure)
 {
     if (pid == NULL)return 0; 
 		
@@ -92,6 +98,7 @@ float f_PID_Calculate(PID_TypeDef_t *pid, float Target,float Measure)
 		{
 			pid->Err[1] = pid->Err[0];
 			pid->Err[0] = pid->Target - pid->Measure;
+
 			
 			if(ABS(pid->Err[0]) > pid->param.Deadband)
 			{
@@ -112,11 +119,14 @@ float f_PID_Calculate(PID_TypeDef_t *pid, float Target,float Measure)
 			pid->Err[1] = pid->Err[0];
 			pid->Err[0] = pid->Target - pid->Measure;
 			
+			if(ABS(pid->Err[0]) > pid->param.Deadband)
+		  {
 			pid->Pout = pid->param.Kp * (pid->Err[0] - pid->Err[1]);
 			pid->Iout = pid->param.Ki *  pid->Err[0];
 			pid->Dout = pid->param.Kd * (pid->Err[0] - 2.f*pid->Err[1] + pid->Err[2]);
 			
 			pid->Output += pid->Pout + pid->Iout + pid->Dout;
+			}
 		}
 		VAL_LIMIT(pid->Output,-pid->param.MaxOut,pid->param.MaxOut);
 		return pid->Output;

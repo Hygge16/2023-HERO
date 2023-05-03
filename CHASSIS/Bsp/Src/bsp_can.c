@@ -6,8 +6,33 @@
 #include "bsp_rc.h"
 
 CAN_RxFrameTypeDef CAN_RxInstance ={0,};
+CAN_TxHeaderTypeDef CAN_TxMsg[CAN_PORT_NUM][stdID_NUM]= 
+{
+	[_CAN1]={
+				[_0x200]={
+							.StdId=0x200,
+							.IDE=CAN_ID_STD,
+							.RTR=CAN_RTR_DATA,
+							.DLC=8,
+						},
 
-
+				[_0x1ff]={
+							.StdId=0x1ff,
+							.IDE=CAN_ID_STD,
+							.RTR=CAN_RTR_DATA,
+							.DLC=8,
+						},
+			},
+	
+	[_CAN2]={
+				[_0x302]={
+							.StdId=0x302,
+							.IDE=CAN_ID_STD,
+							.RTR=CAN_RTR_DATA,
+							.DLC=8,
+						},
+			},
+};
 
 /**
   * @brief  Configures the CAN Module.
@@ -76,11 +101,13 @@ void CAN1_rxDataHandler(uint32_t *StdID, uint8_t *rxBuf)
 		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Right_Front_Wheel]);
 		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Left_Rear_Wheel]);
 		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Right_Rear_Wheel]);
+	
 }
 
 void CAN2_rxDataHandler(uint32_t *StdID, uint8_t *rxBuf)
 {
 		get_DJI_Motor_Info(StdID,rxBuf,&DJI_Motor[Gimbal_Yaw]);
+	
 		get_rc_ctrl_data(StdID,rxBuf,&rc_ctrl);
 }
 

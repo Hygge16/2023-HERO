@@ -165,7 +165,8 @@ static float encoder_to_angle(General_Motor_Info_t *Info,float torque_ratio,uint
 		return Info->angle;
 }
 
-/** @brief  Check the DJI Motor state
+/**
+	*@brief  Check the DJI Motor state
   * @param  *DJI_Motor pointer to a DJI_Motor_Info_t structure that contains
   *                    the configuration information for the specified motor.  
   * @retval None
