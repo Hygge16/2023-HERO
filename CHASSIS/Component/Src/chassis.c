@@ -332,14 +332,14 @@ void CHASSIS_Handler(float speed[SPEED_TYPE_NUM])
 	
 	Power_Limit(Expect,CAN1_SendData);
 
-	CAN_TxMsg[_CAN1][_0x200].Data[0] = (uint8_t)(CAN1_SendData[Left_Front_Wheel]>>8);
-	CAN_TxMsg[_CAN1][_0x200].Data[1] = (uint8_t)(CAN1_SendData[Left_Front_Wheel]);
-	CAN_TxMsg[_CAN1][_0x200].Data[4] = (uint8_t)(CAN1_SendData[Right_Front_Wheel]>>8);
-	CAN_TxMsg[_CAN1][_0x200].Data[5] = (uint8_t)(CAN1_SendData[Right_Front_Wheel]);
-	CAN_TxMsg[_CAN1][_0x200].Data[2] = (uint8_t)(CAN1_SendData[Left_Rear_Wheel]>>8);
-	CAN_TxMsg[_CAN1][_0x200].Data[3] = (uint8_t)(CAN1_SendData[Left_Rear_Wheel]);
-	CAN_TxMsg[_CAN1][_0x200].Data[6] = (uint8_t)(CAN1_SendData[Right_Rear_Wheel]>>8);
-	CAN_TxMsg[_CAN1][_0x200].Data[7] = (uint8_t)(CAN1_SendData[Right_Rear_Wheel]);
+	CAN_TxMsg[_CAN1][_0x200].data[0] = (uint8_t)(CAN1_SendData[Left_Front_Wheel]>>8);
+	CAN_TxMsg[_CAN1][_0x200].data[1] = (uint8_t)(CAN1_SendData[Left_Front_Wheel]);
+	CAN_TxMsg[_CAN1][_0x200].data[4] = (uint8_t)(CAN1_SendData[Right_Front_Wheel]>>8);
+	CAN_TxMsg[_CAN1][_0x200].data[5] = (uint8_t)(CAN1_SendData[Right_Front_Wheel]);
+	CAN_TxMsg[_CAN1][_0x200].data[2] = (uint8_t)(CAN1_SendData[Left_Rear_Wheel]>>8);
+	CAN_TxMsg[_CAN1][_0x200].data[3] = (uint8_t)(CAN1_SendData[Left_Rear_Wheel]);
+	CAN_TxMsg[_CAN1][_0x200].data[6] = (uint8_t)(CAN1_SendData[Right_Rear_Wheel]>>8);
+	CAN_TxMsg[_CAN1][_0x200].data[7] = (uint8_t)(CAN1_SendData[Right_Rear_Wheel]);
 }
 
 
@@ -361,7 +361,7 @@ void CHASSIS_Stop(void)
 
 	for(int i = 0; i < 8; i++)
 	{
-		CAN_TxMsg[_CAN1][_0x200].Data[i]=0;
+		CAN_TxMsg[_CAN1][_0x200].data[i]=0;
 	}
 }
 

@@ -49,4 +49,5 @@ chassis/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
   ..\Core\Inc\can.h ..\Core\Inc\spi.h ..\Core\Inc\usart.h \
-  ..\Core\Inc\gpio.h
+  ..\Core\Inc\gpio.h ..\Component\Inc\bsp_pm01_api.h \
+  ..\Bsp\Inc\bsp_can.h ..\Bsp\Inc\bsp.h

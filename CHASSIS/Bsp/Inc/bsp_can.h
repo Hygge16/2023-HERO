@@ -39,7 +39,7 @@ enum{
 
 /* Exported functions --------------------------------------------------------*/
 extern void bsp_can_init(void);
-extern void USER_CAN_TxMessage(CAN_TxFrameTypeDef *TxHeader);
-extern CAN_TxHeaderTypeDef CAN_TxMsg[CAN_PORT_NUM][stdID_NUM];
+extern void USER_CAN_TxMessage(CAN_HandleTypeDef *hcan,CAN_TxFrameTypeDef *TxHeader);
+extern CAN_TxFrameTypeDef CAN_TxMsg[CAN_PORT_NUM][stdID_NUM];
 
 #endif //BSP_CAN_H

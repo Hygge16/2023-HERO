@@ -13,6 +13,7 @@
 PID_TypeDef_t Chassis_Speed[4],Chassis_Folo[2];
 
 Chassis_Info_t Chassis_Ctrl={
+	  .ctrl_mode = RC_CTRL,
 		.mode = CHASSIS_INVA,
 		.midangle = 809,
 };
@@ -34,11 +35,12 @@ void Chassis_Task(void const * argument)
   {
 		pm01_access_poll();	        
 		control_switch();	
+		
 		Chassis_AcclerateCurve(&Chassis_Ctrl.speed[_X],&Chassis_Ctrl.speed[_Y]);
 		CHASSIS_Handler(Chassis_Ctrl.speed);
-		
-		vTaskDelayUntil(&currentTime, 2);
-		
+
+		USER_CAN_TxMessage(&hcan1,&CAN_TxMsg[_CAN1][_0x200]);
+
     osDelay(1);
   }
   /* USER CODE END ChassisTask */
