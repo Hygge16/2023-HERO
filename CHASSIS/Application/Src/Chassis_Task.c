@@ -35,9 +35,6 @@ void Chassis_Task(void const * argument)
   {
 		pm01_access_poll();	        
 		control_switch();	
-		
-		Chassis_AcclerateCurve(&Chassis_Ctrl.speed[_X],&Chassis_Ctrl.speed[_Y]);
-		CHASSIS_Handler(Chassis_Ctrl.speed);
 
 		USER_CAN_TxMessage(&hcan1,&CAN_TxMsg[_CAN1][_0x200]);
 
@@ -46,26 +43,53 @@ void Chassis_Task(void const * argument)
   /* USER CODE END ChassisTask */
 }
 
-/**
-	* @name		Chassis_Mode_Set
-  * @brief  设置底盘模式
-  * @param  Chassis_Info
-  * @retval NONE
-  */
-void Chassis_Mode_Set(Chassis_Info_t *Chassis_Info)
+
+void CHASSIS_Ctrl(void)
 {
-	if(Chassis_Info->rc_ctrl->rc.s[1] == 1)
-		Chassis_Info->mode = CHASSIS_INVA;
-	else if(Chassis_Info->rc_ctrl->rc.s[1] == 3)
-		Chassis_Info->mode = CHASSIS_FOLO;
-	else if(Chassis_Info->rc_ctrl->rc.s[1] == 2)
-		Chassis_Info->mode = CHASSIS_SPIN;
-	else
-		Chassis_Info->mode = CHASSIS_INVA;
-	
-	if(Key_SHIFT() == true && Chassis_Info->mode != CHASSIS_INVA) 
-		Chassis_Info->mode = CHASSIS_SPIN;
+	//判断是否切换控制模式
+	if(Chassis_Ctrl.ctrl_mode != Chassis_Ctrl.ctrl_mode)
+	{	
+		//重置底盘
+		Chassis_Reset(&Chassis_Ctrl);
+		//刷新控制模式
+		Chassis_Ctrl.ctrl_mode = Chassis_Ctrl.ctrl_mode;
+	}
+	//模式切换
+	if(Chassis_Ctrl.ctrl_mode == RC_CTRL){
+		Chassis_Rc_Ctrl();
+	}
+	else if(Chassis_Ctrl.ctrl_mode == KEY_CTRL){
+		Chassis_Key_Ctrl();
+	}
+	else{
+		Chassis_Reset(&Chassis_Ctrl);
+	}
+	//变速曲线
+	Chassis_AcclerateCurve(&Chassis_Ctrl.speed[_X],&Chassis_Ctrl.speed[_Y]);
+	//底盘输出
+	CHASSIS_Handler(Chassis_Ctrl.speed);
 }
+
+///**
+//	* @name		Chassis_Mode_Set
+//  * @brief  设置底盘模式
+//  * @param  Chassis_Info
+//  * @retval NONE
+//  */
+//void Chassis_Mode_Set(Chassis_Info_t *Chassis_Info)
+//{
+//	if(Chassis_Info->rc_ctrl->rc.s[1] == 1)
+//		Chassis_Info->mode = CHASSIS_INVA;
+//	else if(Chassis_Info->rc_ctrl->rc.s[1] == 3)
+//		Chassis_Info->mode = CHASSIS_FOLO;
+//	else if(Chassis_Info->rc_ctrl->rc.s[1] == 2)
+//		Chassis_Info->mode = CHASSIS_SPIN;
+//	else
+//		Chassis_Info->mode = CHASSIS_INVA;
+//	
+//	if(Key_SHIFT() == true && Chassis_Info->mode != CHASSIS_INVA) 
+//		Chassis_Info->mode = CHASSIS_SPIN;
+//}
 
 /**
 	* @name		Chassis_Info_Update
@@ -98,6 +122,9 @@ void Chassis_Info_Update(Chassis_Info_t *Chassis_Info)
 void Chassis_Reset(Chassis_Info_t *chassis)
 {
 	chassis->mode = CHASSIS_INVA;
+	chassis->CH2 = 0;
+	chassis->CH3 = 0;
+	
 	Chassis_Set_Pid(chassis->ctrl_mode);
 	CHASSIS_Stop();
 }

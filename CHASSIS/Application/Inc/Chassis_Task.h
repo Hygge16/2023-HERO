@@ -45,7 +45,8 @@ typedef struct
 
 extern Chassis_Info_t Chassis_Ctrl;
 
-void chassis_mode_set(Chassis_Info_t *Chassis_Info);
+void CHASSIS_Ctrl(void);
+//void chassis_mode_set(Chassis_Info_t *Chassis_Info);
 void Chassis_AcclerateCurve(float *speed_X,float *speed_Y);
 static float AcclerateCurve(float x , float k);
 static float DecclerateCurve(float x , float k);
