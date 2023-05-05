@@ -8,6 +8,12 @@
 #include "stdint.h"
 #include "usart.h"
 
+#define UART1_MAX_RX_LEN    12
+#define UART1_MAX_TX_LEN    14
+
+extern uint8_t UART1_RX_BUF[UART1_MAX_RX_LEN];//定义串口1接收缓存大小为10
+extern uint8_t UART1_TX_BUF[UART1_MAX_TX_LEN];//定义串口1发送缓存，大小为9
+
 extern void myprintf(int16_t value_1,int16_t value_2);
 /**
   * @brief  Starts the UART DMA RxEventCallback .

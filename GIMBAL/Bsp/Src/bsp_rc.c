@@ -8,7 +8,7 @@
 #include "pid.h"
 #include "kalman.h"
 
-rc_ctrl_t rc_ctrl;
+Rc_Ctrl_t rc_ctrl;
 Key_Info_t Key_Info;
 static uint8_t SBUS_RX_BUF[2][SBUS_RX_BUF_NUM];
 
@@ -57,7 +57,7 @@ void remote_control_init(void)
   * @param[out]     rc_ctrl_offline:遥控器信息变量指针.
   * @retval         none
   */
-static void rc_ctrl_protect(rc_ctrl_t *rc_ctrl_offline)
+static void rc_ctrl_protect(Rc_Ctrl_t *rc_ctrl_offline)
 {
 	if(rc_ctrl_offline == NULL)
 	{
@@ -72,7 +72,7 @@ static void rc_ctrl_protect(rc_ctrl_t *rc_ctrl_offline)
   * @param[out]     rc_ctrl:遥控器信息变量指针.
   * @retval         none
   */
-void rc_ctrl_monitor(rc_ctrl_t *rc_ctrl)
+void rc_ctrl_monitor(Rc_Ctrl_t *rc_ctrl)
 {
 	if(rc_ctrl == NULL)
 	{
@@ -100,7 +100,7 @@ void rc_ctrl_monitor(rc_ctrl_t *rc_ctrl)
   * @param  *rc_ctrl    pointer to a rc_ctrl_t structure
   * @retval NULL
   */
-static void sbus_to_rc(volatile const uint8_t *sbus_buf, rc_ctrl_t  *rc_ctrl)
+static void sbus_to_rc(volatile const uint8_t *sbus_buf, Rc_Ctrl_t  *rc_ctrl)
 {
     if (sbus_buf == NULL || rc_ctrl == NULL) return;
 

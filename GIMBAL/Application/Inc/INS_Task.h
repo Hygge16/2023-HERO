@@ -43,6 +43,8 @@
 #define INS_Y_ADDRESS_OFFSET 1
 #define INS_Z_ADDRESS_OFFSET 2
 
+extern float INS_angle[3];      //euler angle, unit rad.欧拉角 单位 rad 
+
 typedef struct
 {
 	float Xk_accel[3];

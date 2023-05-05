@@ -116,13 +116,14 @@ typedef  struct
 		
 		bool rc_lost;
 		uint8_t Online_Cnt;
-}rc_ctrl_t;
+		uint16_t Offline_Cnt;
+}Rc_Ctrl_t;
 
-extern rc_ctrl_t rc_ctrl;
+extern Rc_Ctrl_t rc_ctrl;
 /* Exported functions --------------------------------------------------------*/
 extern void remote_control_init(void);
 extern void Remote_Control_RxEvent(UART_HandleTypeDef *huart);
-extern void rc_ctrl_monitor(rc_ctrl_t *rc_ctrl);
+extern void rc_ctrl_monitor(Rc_Ctrl_t *rc_ctrl);
 extern float Mouse_Y_Speed(void);
 extern float Mouse_X_Speed(void);
 extern bool Key_W(void);

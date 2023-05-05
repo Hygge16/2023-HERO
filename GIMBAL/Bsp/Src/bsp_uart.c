@@ -5,6 +5,9 @@
 
 #include "bsp_uart.h"
 
+uint8_t UART1_RX_BUF[UART1_MAX_RX_LEN]={0};//定义串口接收缓存大小为10
+uint8_t UART1_TX_BUF[UART1_MAX_TX_LEN]={0};//定义串口发送缓存，大小为9
+
 /**
   * @brief  Starts the UART RxEventCallback .
   * @param  uartHandle pointer to a UART_HandleTypeDef structure that contains

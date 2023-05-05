@@ -7,8 +7,56 @@
 #include "chassis.h"
 #include "referee_Info.h"
 
-CAN_RxFrameTypeDef CAN_RxInstance ={0,};
+int L[8] = { 0,2,4,6 , 0,2,4,6 };
+int H[8] = { 1,3,5,7 , 1,3,5,7 };
 
+CAN_RxFrameTypeDef CAN_RxInstance ={0,};
+CAN_TxFrameTypeDef CAN_TxMsg[CAN_PORT_NUM][stdID_NUM]= 
+{
+	[_CAN1]={
+				[_0x200]={
+							.header.StdId=0x200,
+							.header.IDE=CAN_ID_STD,
+							.header.RTR=CAN_RTR_DATA,
+							.header.DLC=8,
+						},
+
+				[_0x1ff]={
+							.header.StdId=0x1ff,
+							.header.IDE=CAN_ID_STD,
+							.header.RTR=CAN_RTR_DATA,
+							.header.DLC=8,
+						},
+			},
+	[_CAN2]={
+				[_0x200]={
+							.header.StdId=0x200,
+							.header.IDE=CAN_ID_STD,
+							.header.RTR=CAN_RTR_DATA,
+							.header.DLC=8,
+						},
+		
+				[_0x1ff]={
+							.header.StdId=0x1ff,
+							.header.IDE=CAN_ID_STD,
+							.header.RTR=CAN_RTR_DATA,
+							.header.DLC=8,
+						},
+
+				[_0x300]={
+							.header.StdId=0x300,
+							.header.IDE=CAN_ID_STD,
+							.header.RTR=CAN_RTR_DATA,
+							.header.DLC=8,
+						},
+				[_0x301]={
+							.header.StdId=0x301,
+							.header.IDE=CAN_ID_STD,
+							.header.RTR=CAN_RTR_DATA,
+							.header.DLC=8,
+						},
+			},
+};
 
 /**
   * @brief  Configures the CAN Module.
@@ -52,13 +100,13 @@ void bsp_can_init(void)
   * @param[out]     TxHeader:CAN发送帧包变量指针.
   * @retval         none
   */
-void USER_CAN_TxMessage(CAN_TxFrameTypeDef *TxHeader)
+void USER_CAN_TxMessage(CAN_HandleTypeDef *hcan,CAN_TxFrameTypeDef *TxHeader)
 {
 	if(TxHeader->hcan == NULL) return;
 	
 	uint32_t TxMailbox = 0;
 
-//   while( HAL_CAN_GetTxMailboxesFreeLevel( TxHeader->hcan ) == 0 );
+   while( HAL_CAN_GetTxMailboxesFreeLevel( TxHeader->hcan ) == 0 );
 	
 //调用库函数实现CAN发送
 	HAL_CAN_AddTxMessage(TxHeader->hcan, &TxHeader->header, TxHeader->data, &TxMailbox);

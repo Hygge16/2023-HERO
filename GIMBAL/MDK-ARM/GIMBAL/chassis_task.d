@@ -15,9 +15,7 @@ gimbal/chassis_task.o: ..\Application\Src\Chassis_Task.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
-  ..\Application\Inc\Chassis_Task.h ..\Component\Inc\chassis.h \
-  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
-  ..\Component\Inc\robot_ref.h \
+  ..\Application\Inc\Chassis_Task.h \
   ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h \
   ..\Drivers\CMSIS\Device\ST\STM32F4xx\Include\stm32f407xx.h \
   ..\Drivers\CMSIS\Include\core_cm4.h \
@@ -52,8 +50,14 @@ gimbal/chassis_task.o: ..\Application\Src\Chassis_Task.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Bsp\Inc\bsp_rc.h ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
+  ..\Bsp\Inc\bsp_rc.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
+  ..\Bsp\Inc\bsp_can.h ..\Core\Inc\can.h ..\Core\Inc\main.h \
+  ..\Component\Inc\robot_ref.h ..\Application\Inc\SystemState_Task.h \
+  ..\Component\Inc\vision.h ..\Application\Inc\Vision_Task.h \
+  ..\Algorithm\Inc\pid.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
+  ..\Algorithm\Inc\assist.h ..\Algorithm\Inc\filter.h \
+  ..\Bsp\Inc\bsp_uart.h ..\Core\Inc\usart.h \
+  ..\Component\Inc\bmi088_driver.h ..\Application\Inc\INS_Task.h \
   D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
-  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
-  ..\Application\Inc\INS_Task.h ..\Bsp\Inc\bsp_can.h ..\Core\Inc\can.h \
-  ..\Core\Inc\main.h ..\Component\Inc\motor.h ..\Algorithm\Inc\pid.h
+  ..\Application\Inc\Shoot_Task.h ..\Component\Inc\motor.h \
+  ..\Application\Inc\Gimbal_Task.h

@@ -1,62 +1,49 @@
-//
-// Created by Yuanbin on 22-10-3.
-//
-
-#include "robot_ref.h"
-
-#if defined(GIMBAL_BOARD)
+//#include "robot_ref.h"
 
 #include "cmsis_os.h"
 #include "Shoot_Task.h"
+#include "Chassis_Task.h"
+#include "SystemState_Task.h"
 
 #include "motor.h"
 #include "bsp_can.h"
 #include "bsp_rc.h"
 #include "pid.h"
 
+int SHOOT_SPEED_16M_S = 6250,SHOOT_SPEED_10M_S = 4200;//荧光弹丸大概5560-5570比赛时候是5515
+int Shoot_speed_mode = 0;
+float speed_add,speed_tem;
+int stuck_flag = 0;//不卡为0，卡弹为1
+int stall_back_flag;
+int Trigger_time_num;
+int RC_shoot_flag = 0;
+int RC_direction = 1;
+int Key_shoot_flag = 0;
+int Key_direction = 1;
+float angle_Err1,speed_Err;
+
 Shoot_Info_t Shoot_Ctrl = {
-    .mode = AUTO,
-    .trigger_Buf = 7,//拨盘叶数
-    .rc_ctrl = &rc_ctrl,
-		.stuck_flag = 1,//卡弹反转
-		.wheel_Speed={
-            [INITIAL]={//初始
-                [LV_1]=SHOOT_SPEED_15M_S,
-                [LV_2]=SHOOT_SPEED_15M_S,
-                [LV_3]=SHOOT_SPEED_15M_S,
-            },
-            [BURST]={//爆发优先
-                [LV_1]=SHOOT_SPEED_15M_S,
-                [LV_2]=SHOOT_SPEED_15M_S,
-                [LV_3]=SHOOT_SPEED_15M_S,
-            },
-            [COOLING]={//冷却优先
-                [LV_1]=SHOOT_SPEED_15M_S,
-                [LV_2]=SHOOT_SPEED_18M_S,
-                [LV_3]=SHOOT_SPEED_18M_S,
-            },
-            [RATE]={//射速优先
-                [LV_1]=SHOOT_SPEED_30M_S,
-                [LV_2]=SHOOT_SPEED_30M_S,
-                [LV_3]=SHOOT_SPEED_30M_S,
-            },
-					},
+	  
+	
+    .shoot_mode = Shoot_Off,
+    .dr16 = &rc_ctrl,
+    .wheel_L = &DJI_Motor[Left_Shoot],
+    .wheel_R = &DJI_Motor[Right_Shoot],
+    .trigger = &DJI_Motor[Trigger],
 };
 
-float wheel_PID_Param[PID_PARAMETER_CNT]={0,1000,15000,13,0.1f,0,};
-
-float trigger_PID_Param[2][PID_PARAMETER_CNT]={
-			[0]={0,1000,10000,16,0.24f,0,},
-			[1]={0,0,3000, 60,0,0,},
-};
+Shoot_Info_t Shoot;
 
 PID_TypeDef_t Shoot_PID[2],Trigger_PID[2];
 
-static void Shoot_Init(void);
-static void wheel_Ctrl(void);
-static void trigger_Ctrl(void);
-static void trigger_Stall_Handle(void);
-static uint16_t Trigger_Speed_deliver(uint16_t cooling_rate);
+//deadband, maxIntegral, max_out, kp, ki, kd
+float wheel_PID_Param[PID_PARAMETER_CNT]={0, 10000, 15000, 10, 0.f, 0,};
+
+float trigger_PID_Param[2][2][PID_PARAMETER_CNT] = 
+{
+			[0]={0, 10000, 15000, 16, 0.05f, 0,},
+			[1]={0, 0, 10000, 60, 0, 0,},
+};
 
 /* USER CODE BEGIN Header_Shoot_Task */
 /**
@@ -68,160 +55,339 @@ static uint16_t Trigger_Speed_deliver(uint16_t cooling_rate);
 void Shoot_Task(void const * argument)
 {
   /* USER CODE BEGIN Shoot_Task */\
-	Shoot_Init();
+	uint32_t currentTime;
+	PID_Init_ByParamArray(&DJI_Motor[Left_Shoot].pid_Speed, &wheel_PID_Param[1]);
+  PID_Init_ByParamArray(&DJI_Motor[Right_Shoot].pid_Speed, &wheel_PID_Param[1]);
+  PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Speed,trigger_PID_Param[1][0]);
+  PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Angle,trigger_PID_Param[1][1]);
+	
   /* Infinite loop */
   for(;;)
   {
+		currentTime = xTaskGetTickCount();
 		
-		wheel_Ctrl();
-		
-		trigger_Ctrl();
-		
-		trigger_Stall_Handle();
-		
-		USER_CAN_TxMessage(&GimbalTxFrame[2]);
+		if(Key_B() == true)
+			Shoot_Ctrl.shoot_mode = Shoot_On;
+		else if(Key_B() == false)
+			Shoot_Ctrl.shoot_mode = Shoot_Off;
+
+		Wheel_Ctrl();
+		Trigger_Ctrl();
+		trigger_Stall_Handle();	
 		
     osDelay(1);
   }
   /* USER CODE END Shoot_Task */
 }
 
-static void Shoot_Init(void)
+static void shoot_State_Handoff(DEVICE_STATE state)
 {
-	PID_Init(&Shoot_PID[0],PID_POSITION,wheel_PID_Param);
-	PID_Init(&Shoot_PID[1],PID_POSITION,wheel_PID_Param);
-	PID_Init(&Trigger_PID[0],PID_POSITION,trigger_PID_Param[0]);
-	PID_Init(&Trigger_PID[1],PID_POSITION,trigger_PID_Param[1]);
+    if(state!=Shoot.state){//防止循环调用出错
+    //参数重置（受当前模式影响）
+		Shoot.state=state;
+        PID_Init_ByParamArray(&Shoot.wheel_L->pid_Speed, &wheel_PID_Param[state]);
+        PID_Init_ByParamArray(&Shoot.wheel_R->pid_Speed, &wheel_PID_Param[state]);
+        PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Speed, trigger_PID_Param[state][0]);
+        PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Angle, trigger_PID_Param[state][1]);
+    }
+}
+
+uint32_t Report_Shoot_NUM(void)
+{
+  return robot.shooter_id1_42mm.bullet_remaining_num_42mm;
+}
+
+uint32_t Report_Shoot_SPEED(void)
+{
+  return robot.bullet_speed;
 }
 
 
-static void wheel_Ctrl(void)
+
+static void Wheel_Ctrl(void)
 {
-	int16_t send_Value[2];
-	float res = Shoot_Ctrl.wheel_Speed[robot.mode][robot.level];
-	float speed_gain = 0;
-	float real_speed = robot.bullet_speed;
-	static float speed_last = 0; 
-	//射速发生变化
-	if(real_speed != speed_last)
+  int16_t send_Value[2];
+  float speed_Err[2] = {0,},target_speed;
+
+	if(Chassis_Ctrl.ctrl == 1)//遥控模式
 	{
-		//射速控制
-		if(res==SHOOT_SPEED_15M_S)
+		if(rc_ctrl.rc.s[1] == 2 && rc_ctrl.rc.s[0] == 3)
+			Shoot_speed_mode=0;
+		if(rc_ctrl.rc.s[1] == 2 && rc_ctrl.rc.s[0] == 1)
+			Shoot_speed_mode=1;
+		
+		if(Shoot_speed_mode==0)
 		{
-			speed_gain += SpeedAdapt(real_speed, 13.7f , 14.3f , 15 , 35);
-		}else if(res==SHOOT_SPEED_18M_S)
+			target_speed = SHOOT_SPEED_10M_S + Temp_BURST_Fix();
+		}
+		if(Shoot_speed_mode==1)
 		{
-			speed_gain += SpeedAdapt(real_speed , 16.7f , 17.3f , 15 , 40);
-		}else if(res==SHOOT_SPEED_30M_S)
+			target_speed = SHOOT_SPEED_16M_S + Temp_RATE_Fix();
+		}
+		
+		speed_Err[0] = (  target_speed - Shoot_Ctrl.wheel_L->Data.velocity);
+		speed_Err[1] = ( -target_speed - Shoot_Ctrl.wheel_R->Data.velocity);
+	}
+	else if(Chassis_Ctrl.ctrl == 2)//键盘模式
+  {
+		if(Shoot.shoot_mode == Shoot_On)
 		{
-			speed_gain += SpeedAdapt(real_speed , 27.7f , 28.3f , 25 , 55);
+			switch(robot.mode)
+			{
+				case INITIAL:
+					
+						speed_tem = Temp_RATE_Fix();
+						target_speed = SHOOT_SPEED_16M_S + speed_tem;
+
+						break;
+				case BURST:
+					
+						target_speed = SHOOT_SPEED_10M_S + Temp_BURST_Fix();
+				
+						break;
+				case RATE:
+
+						speed_tem = Temp_RATE_Fix();
+						target_speed = SHOOT_SPEED_16M_S + speed_tem;
+				
+						break;          
+				default:
+					
+						target_speed=0;
+				
+						break;
+			 }
+
+			speed_Err[0] = (  target_speed - Shoot_Ctrl.wheel_L->Data.velocity);
+			speed_Err[1] = ( -target_speed - Shoot_Ctrl.wheel_R->Data.velocity);
+		}
+		else if(Shoot.shoot_mode == Shoot_Off)
+		{
+			speed_Err[0] =0;
+			speed_Err[1] =0;
 		}
 	}
-	res += speed_gain + Temp_Fix_speed(real_speed);
-	speed_last = real_speed;
-			
-//速度控制(PID控制方案)
-    send_Value[0] = f_PID_Calculate(&Shoot_PID[0], res,Gimbal_Motor[Left_Friction].Data.velocity);
-    send_Value[1] = f_PID_Calculate(&Shoot_PID[1],-res,Gimbal_Motor[Right_Friction].Data.velocity);
+
 	
-	if(rc_ctrl.rc.s[1]!=2)
-	{
-		send_Value[0] = 0;
-		send_Value[1] = 0;
-	}
-	
-//发送装载
-		GimbalTxFrame[2].data[0] = (uint8_t)(send_Value[0] >> 8);
-		GimbalTxFrame[2].data[1] = (uint8_t)(send_Value[0]);
-		GimbalTxFrame[2].data[2] = (uint8_t)(send_Value[1] >> 8);
-		GimbalTxFrame[2].data[3] = (uint8_t)(send_Value[1]);
+	f_PID_Calculate(&DJI_Motor[Left_Shoot].pid_Speed, speed_Err[0],0);
+	f_PID_Calculate(&DJI_Motor[Right_Shoot].pid_Speed, speed_Err[1],0);
+	send_Value[0] = Shoot_Ctrl.wheel_L->pid_Speed.Err[0];
+	send_Value[1] = Shoot_Ctrl.wheel_R->pid_Speed.Err[1];
+
+
+	Shoot_Ctrl.wheel_L->txMsg->data[L[Shoot_Ctrl.wheel_L->Data.StdId-0x201]] = (uint8_t)(send_Value[0]>>8);
+	Shoot_Ctrl.wheel_L->txMsg->data[H[Shoot_Ctrl.wheel_L->Data.StdId-0x201]] = (uint8_t)(send_Value[0]);
+	Shoot_Ctrl.wheel_R->txMsg->data[L[Shoot_Ctrl.wheel_R->Data.StdId-0x201]] = (uint8_t)(send_Value[1]>>8);
+	Shoot_Ctrl.wheel_R->txMsg->data[H[Shoot_Ctrl.wheel_R->Data.StdId-0x201]] = (uint8_t)(send_Value[1]);
 }
 
-static void trigger_Ctrl(void)
+static float Temp_BURST_Fix(void)
 {
-	int16_t send_value;
-	
-	if(rc_ctrl.rc.s[1] == 2)
-	{
-		send_value = f_PID_Calculate(&Trigger_PID[0],Shoot_Ctrl.stuck_flag*(rc_ctrl.rc.ch[1]*5 - Key_mouse_l()*Trigger_Speed_deliver(robot.shooter_id1_17mm.cooling_rate)),Gimbal_Motor[Trigger].Data.velocity);
-	}else
-	{
-		send_value = 0;
-	}
-	
-	GimbalTxFrame[2].data[4] = (uint8_t)(send_value >> 8);
-	GimbalTxFrame[2].data[5] = (uint8_t)(send_value);
+  float temp_scope = 35;//假设变化范围为35摄氏度
+  float temp_low = 35;//初始温度设定为35摄氏度
+  float res = 0;
+  float temp_real;
+  
+  temp_real = ((float)Shoot_Ctrl.wheel_L->Data.temperature + (float)Shoot_Ctrl.wheel_R->Data.temperature)/2;
+  
+  if(temp_real >= temp_low)
+    res = ((temp_real - temp_low)/temp_scope * (-35))*7;
+  if(temp_real < temp_low)
+    res = 0;
+  if(temp_real > temp_low + temp_scope)
+    res = -35;
+  
+		return res;
 }
 
-static uint16_t Trigger_Speed_deliver(uint16_t cooling_rate)
+static float Temp_RATE_Fix(void)
 {
-	float res = 0;
+  float temp_scope = 15;//假设变化范围为25摄氏度
+  float temp_low = 29;//初始温度设定为35摄氏度
+  float res = 0;
+  float temp_real;
 	
-	switch(cooling_rate)//枪口每秒冷却值
+  temp_real = ((float)Shoot_Ctrl.wheel_L->Data.temperature + (float)Shoot_Ctrl.wheel_R->Data.temperature)/2;
+  
+  if(temp_real >= temp_low)
 	{
-		case 15:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 20)//2发余量
-				res = TRIGGER_FREQ_3_HZ;
-			else 
-				res = 0;
-		break;
-		case 25:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 20)
-				res = TRIGGER_FREQ_5_HZ;
-			else 
-				res = 0;
-		break;
-		case 35:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 30)
-				res = TRIGGER_FREQ_5_HZ;
-			else 
-				res = TRIGGER_FREQ_3_HZ;
-		break;
-		case 40:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 30)
-				res = TRIGGER_FREQ_6_HZ;
-			else 
-				res = TRIGGER_FREQ_3_HZ;
-		break;
-		case 60:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 30)
-				res = TRIGGER_FREQ_8_HZ;
-			else
-				res = TRIGGER_FREQ_5_HZ;
-		break;
-		case 80:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 30)
-				res = TRIGGER_FREQ_10_HZ;
-			else 
-				res = TRIGGER_FREQ_7_HZ;							
-		break;
-		default:
-			if((robot.shooter_id1_17mm.cooling_limit-robot.cooling_heat) >= 20)//2发余量
-				res = TRIGGER_FREQ_3_HZ;
-			else 
-				res = 0;
-		break;
+		if(temp_real - temp_low >0 && temp_real - temp_low <4.f){
+			res=(temp_real - temp_low)*(-0.8f);}
+		if(temp_real - temp_low >4.f && temp_real - temp_low <9.f){
+			res=4*(-0.8f) + (temp_real - temp_low - 4)*(-1.8f);}
+		if(temp_real - temp_low >9.f){
+			res=4*(-0.8f) + 4*(-1.8f) + (temp_real - temp_low - 9)*(-2.8f);}
 	}
+
+  else if(temp_real < temp_low)res = 0;
+  else if(temp_real > temp_low + temp_scope)res = -70;
+  
 	return res;
 }
 
-//堵转判断和处理（全模式调用）
+static float SpeedAdapt_10M(float real_S , float min_S, float max_S,float up_num , float down_num)
+{
+	float res=0;
+
+  if(real_S < 8) res+=2*up_num;//射速太低
+	else if(real_S < min_S && real_S > 8) res+=up_num;//射速偏低
+  else if(real_S >= min_S && real_S <= max_S )res = 0;
+	else if(real_S > max_S) res -= down_num;//射速偏高
+	
+  return res;
+}
+
+static float SpeedAdapt_16M(float real_S , float min_S, float max_S,float up_num , float down_num)
+{
+	float res=0;
+
+  if(real_S < 14.3f) res+=1.8f*up_num;//射速太低
+	else if(real_S < min_S && real_S > 14.3f) res+=up_num;//射速偏低
+  else if(real_S >= min_S && real_S <= max_S )res = 0;
+	else if(real_S > max_S && real_S <15.5f) res -= down_num;//射速稍微偏高
+	else if(real_S >15.5f)res -=1.5f * down_num;
+	
+  return res;
+}
+
+bool Judge_IF_SingeStuck(void)
+{
+	bool res = false;
+	
+	float angle_err = DJI_Motor[Trigger].pid_Angle.Err[0];
+	
+	if(ABS(angle_err) >= 360.f/2.f)
+	{
+			res = true;
+	}
+	
+	return res;
+}
+
 static void trigger_Stall_Handle(void)
 {
 	static uint16_t cnt = 0;
 	
-	if(Judge_IF_AutoBlock(Trigger_PID[0].Err[0])==true)
+	if(Judge_IF_SingeStuck() == true)
 	{
 		cnt++;
-		if(cnt > 300)
+		if(cnt > 100)
 		{
-			Shoot_Ctrl.stuck_flag = -Shoot_Ctrl.stuck_flag;
+			stuck_flag = 1;
 			cnt = 0;
 		}
-	}else{
-			cnt = 0;
+	}else if(Judge_IF_SingeStuck() == false)
+	{
+		stuck_flag = 0;
+		cnt = 0;
 	}
 }
 
+static void Trigger_Ctrl(void)
+{	
+	  static uint32_t _time[DJI_MOTOR_NUM];
+    static bool IF_TRIGGER_POSITIVE=false;
+		static bool IF_TRIGGER_NEGATIVE=false;
+    int16_t send_Value;
+	
+		if(DJI_Motor[Trigger].stalled == 1 && stall_back_flag == 1)
+		{
+		  PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Speed, trigger_PID_Param[1][0]);
+      PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Angle, trigger_PID_Param[1][1]);
+			Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle - ((31/12)*10.f);
+			stall_back_flag = 0;
+		}
+		else if(DJI_Motor[Trigger].stalled==0)
+		{
+			if(Chassis_Ctrl.ctrl == 1 && rc_ctrl.rc.s[1] == 2)//遥控器控制
+			{
+					if(Trigger_time_num < 300)
+				{
+					Trigger_time_num++;
+				}
+			else if((rc_ctrl.rc.ch[1] != 0 && RC_shoot_flag == 0))
+				{
+					if(rc_ctrl.rc.ch[1] > 0)
+						RC_direction = 1;
+					if(rc_ctrl.rc.ch[1] < 0)
+						RC_direction = -1;
 
-#endif
+					Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ RC_direction * 186.f;//}12比31
+					Trigger_time_num = 0;
+					RC_shoot_flag = 1;
+				}
+				else if(rc_ctrl.rc.ch[1] == 0)
+					RC_shoot_flag = 0;
+			}
+		}
+		else if(Chassis_Ctrl.ctrl == 2 && Shoot.shoot_mode == Shoot_On)//键盘控制，点射
+		{
+			if(Trigger_time_num < 300)
+			{
+				Trigger_time_num++;
+			}				
+			else
+			{
+				if(Key_mouse_l() == false)
+					IF_TRIGGER_POSITIVE = true;
+				if(Key_R() == false)
+					IF_TRIGGER_NEGATIVE = true;
+					
+				if(IF_TRIGGER_POSITIVE == true && Key_shoot_flag == 0)//鼠标左键打弹，拨弹盘正转
+				{
+					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)//发射受枪口热量限制
+					{
+						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ Key_direction * 186.f;  //((31/12)*72.f)
+						Trigger_time_num = 0;
+					}
+						IF_TRIGGER_POSITIVE = false;
+						Key_shoot_flag = 1;
+				}
+
+				if(IF_TRIGGER_NEGATIVE == true && Key_shoot_flag == 0)//按键R退弹，拨弹盘反转
+				{
+					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)
+					{
+						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	- Key_direction * 186.f;
+						Trigger_time_num=0;
+					}
+						IF_TRIGGER_NEGATIVE = false;
+						Key_shoot_flag = 1;
+				}
+
+				if(Key_mouse_l() == true)
+					Key_shoot_flag = 0;
+				if(Key_R() == true)
+					Key_shoot_flag = 0;
+			}
+		}
+
+		angle_Err1 = Shoot.trigger_Angle - DJI_Motor[Trigger].Data.angle;
+
+		speed_Err = f_PID_Calculate(&DJI_Motor[Trigger].pid_Angle,angle_Err1,0) - DJI_Motor[Trigger].Data.velocity;
+
+		send_Value = f_PID_Calculate(&DJI_Motor[Trigger].pid_Speed,speed_Err,0);
+
+    DJI_Motor[Trigger].txMsg->data[L[DJI_Motor[Trigger].Data.StdId-0x201]] = (uint8_t)(send_Value>>8);
+    DJI_Motor[Trigger].txMsg->data[H[DJI_Motor[Trigger].Data.StdId-0x201]] = (uint8_t)(send_Value);
+		
+		if(DJI_Motor[Trigger].Data.temperature >= 100)
+		{
+			DJI_Motor[Trigger].txMsg->data[L[DJI_Motor[Trigger].Data.StdId-0x201]] = (uint8_t)(0>>8);
+		  DJI_Motor[Trigger].txMsg->data[H[DJI_Motor[Trigger].Data.StdId-0x201]] = (uint8_t)(0);}
+		
+			if(DJI_Motor[Trigger].I_Level != HIGH)
+			{
+				_time[Trigger] = xTaskGetTickCount();
+				DJI_Motor[Trigger].stalled = 0;
+			}
+			
+			if(xTaskGetTickCount() - _time[Trigger] > 500)
+			{
+				DJI_Motor[Trigger].txMsg->data[L[DJI_Motor[Trigger].Data.StdId-0x201]] = (uint8_t)(0>>8);
+				DJI_Motor[Trigger].txMsg->data[H[DJI_Motor[Trigger].Data.StdId-0x201]] = (uint8_t)(0);
+				stall_back_flag = 1;
+				DJI_Motor[Trigger].stalled = 1;
+			}
+}
+

@@ -1,47 +1,44 @@
-//
-// Created by Yuanbin on 22-10-3.
-//
-
 #include "robot_ref.h"
-
 #include "cmsis_os.h"
-
 #include "Gimbal_Task.h"
-#include "INS_Task.h" 
-
 #include "pid.h"
-#include "motor.h"
 #include "bsp_can.h"
+#include "filter.h"
+#include "Vision_Task.h"
+
+int Vision_Flag;
+float pit_motor_angle;
+float ky=1.f,kp=1.f;
+float pit_add;
+
+int16_t SendValue[2];
+
+kf_data_t KF_Gimbal_Pitch;
+kf_data_t KF_Gimbal_Yaw;
+
+Gimbal_Info_t Gimbal_Ctrl=
+{
+	.dr16 = &rc_ctrl,
+	.vision = &vision,
+	.IMU = &imu,
+  .yaw = &DJI_Motor[Gimbal_Yaw],
+  .pitch = &DJI_Motor[Gimbal_Pitch],
+};
 
 //deadband, maxIntegral, max_out, kp, ki, kd
-float f_gimbal_Pid_Para[2][2][PID_PARAMETER_CNT]={
-	[0]={
-		[0]={0.f,0.f,5000.f,44.f,0.f,0.f,},
-		[1]={0.f,5000.f,30000.f,64.f,0.01f,0.f,},
-	},
-	[1]={
-		[0]={0.f,0.f,5000.f,60.f,0.f,0.f,},
-		[1]={0,5000,30000,80,0.12f,0.f,},
-	},
+float f_yaw_Pid_Param[2][PID_PARAMETER_CNT]=
+{
+	[0]={0.f, 2000.f, 32000.f, 150.f, 0.1f, 0,},
+	[1]={0.f, 2000.f, 1200.f, 60.f, 0.f, 0,},
 };
 
-//PID
+float f_pitch_Pid_Param[2][PID_PARAMETER_CNT]=
+{
+	[0]={0.f, 20000.f, 27200.f, 60.f, 0.f, 0.f,},
+	[1]={0.f, 0.f, 1000.f, -56.f, 0.f, 0.5f,},
+};
+
 PID_TypeDef_t Gimbal_PID[2][2];
-
-//云台控制信息
-Gimbal_Info_t Gimbal_Ctrl={
-		.rc_ctrl = &rc_ctrl,
-		.Measure.pit_angle = &INS_Info.pit_angle,
-		.Measure.yaw_angle = &INS_Info.yaw_tolangle,
-		.Measure.pit_gyro  = &INS_Info.pit_gyro,
-		.Measure.yaw_gyro  = &INS_Info.yaw_gyro,
-		.Limit_pitch.max = 30.f,
-		.Limit_pitch.min = -24.f,
-};
-
-static void gimbal_init(void);
-static void gimbal_posture_ctrl(Gimbal_Info_t *Gimbal_Info_control);
-static void chassis_send_current(Gimbal_Info_t *Gimbal_Info_send,CAN_TxFrameTypeDef *TXFrame);
 
 /* USER CODE BEGIN Header_Gimbal_Task */
 /**
@@ -53,71 +50,109 @@ static void chassis_send_current(Gimbal_Info_t *Gimbal_Info_send,CAN_TxFrameType
 void Gimbal_Task(void const * argument)
 {
   /* USER CODE BEGIN Gimbal_Task */
-	gimbal_init();
+	uint32_t currentTime;
   /* Infinite loop */
   for(;;)
   {
+		currentTime = xTaskGetTickCount();//当前系统时间
+		
+		if(DJI_Motor[Gimbal_Pitch].Data.angle > 200.f)
+			pit_motor_angle=(DJI_Motor[Gimbal_Pitch].Data.angle-360.f);
+		if(DJI_Motor[Gimbal_Pitch].Data.angle < 100.f)
+			pit_motor_angle=(DJI_Motor[Gimbal_Pitch].Data.angle);
+		
+		Key_Q();
+		Key_E();
 
+		Gimbal_Posture_Ctrl();
+		
     osDelay(1);
   }
   /* USER CODE END Gimbal_Task */
 }
 
 /**
-  * @brief          云台初始化
-  * @param[out]     none
-  * @retval         none
+	* @name		
+  * @brief  none        
+  * @param	none
+  * @retval none
   */
-static void gimbal_init(void)
+static void gimbal_State_Handoff(DEVICE_STATE state)
 {
-	//PID Init
-	PID_Init(&Gimbal_PID[Gimbal_Pitch][0],PID_POSITION,f_gimbal_Pid_Para[Gimbal_Pitch][0]);
-	PID_Init(&Gimbal_PID[Gimbal_Pitch][1],PID_POSITION,f_gimbal_Pid_Para[Gimbal_Pitch][1]);
-	PID_Init(&Gimbal_PID[Gimbal_Yaw][0]  ,PID_POSITION,f_gimbal_Pid_Para[Gimbal_Yaw][0]);
-	PID_Init(&Gimbal_PID[Gimbal_Yaw][1]  ,PID_POSITION,f_gimbal_Pid_Para[Gimbal_Yaw][1]);
-}
-
-
-/**
-  * @brief          云台姿态控制
-  * @param[out]     Gimbal_Info_control:云台信息变量指针.
-  * @retval         none
-  */
-static void gimbal_posture_ctrl(Gimbal_Info_t *Gimbal_Info_control)
-{
-		if(Gimbal_Info_control == NULL) return ;
-		
-		//更新期望角速度
-		Gimbal_Info_control->Target.pit_gyro = f_PID_Calculate(&Gimbal_PID[Gimbal_Pitch][0],Gimbal_Info_control->Target.pit_angle,*Gimbal_Info_control->Measure.pit_angle);
-		Gimbal_Info_control->Target.yaw_gyro = f_PID_Calculate(&Gimbal_PID[Gimbal_Yaw][0],  Gimbal_Info_control->Target.yaw_angle,*Gimbal_Info_control->Measure.yaw_angle);
-		
-		//更新控制电流值
-		Gimbal_Info_control->SendValue[Gimbal_Pitch] = f_PID_Calculate(&Gimbal_PID[Gimbal_Pitch][1],Gimbal_Info_control->Target.pit_gyro,*Gimbal_Info_control->Measure.pit_gyro);
-		Gimbal_Info_control->SendValue[Gimbal_Yaw] = f_PID_Calculate(&Gimbal_PID[Gimbal_Yaw][1],  Gimbal_Info_control->Target.yaw_gyro,*Gimbal_Info_control->Measure.yaw_gyro);
-		
-		//云台卸力
-		if(rc_ctrl.rc.s[1]==1 || rc_ctrl.rc.s[1]==0)
+    if(state!=Gimbal_Ctrl.state)
 		{
-			Gimbal_Info_control->SendValue[Gimbal_Pitch] = 0;
-			Gimbal_Info_control->SendValue[Gimbal_Yaw] = 0;
-		}
+			  Gimbal_Ctrl.state=state;
+        PID_Init_ByParamArray(&Gimbal_Ctrl.yaw->pid_Angle, &f_yaw_Pid_Param[state][1]);
+        PID_Init_ByParamArray(&Gimbal_Ctrl.pitch->pid_Angle, &f_pitch_Pid_Param[state][1]);
+        PID_Init_ByParamArray(&Gimbal_Ctrl.yaw->pid_Speed, &f_yaw_Pid_Param[state][0]);
+        PID_Init_ByParamArray(&Gimbal_Ctrl.pitch->pid_Speed, &f_pitch_Pid_Param[state][0]);
+    }
 }
 
 /**
-  * @brief          云台控制电流发送
-	* @param[out]     Gimbal_Info_send:云台信息变量指针, TXFrame:CAN发送帧包变量指针
-  * @retval         none
+	* @name		Gimbal_Posture_Ctrl
+  * @brief  none        
+  * @param	none
+  * @retval none
   */
-static void chassis_send_current(Gimbal_Info_t *Gimbal_Info_send,CAN_TxFrameTypeDef *TXFrame)
+static void Gimbal_Posture_Ctrl(void)
 {
-	if(Gimbal_Info_send == NULL || TXFrame == NULL ) return;
+	float angle_a;
+  float angle_Err[2],speed_Err[2];
+  int16_t Send_Value[2];
 	
-	TXFrame[Gimbal_Pitch].data[2] = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Pitch] >> 8);
-	TXFrame[Gimbal_Pitch].data[3] = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Pitch]);
-	TXFrame[Gimbal_Yaw].data[0]   = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Yaw] >> 8);
-	TXFrame[Gimbal_Yaw].data[1]   = (uint8_t)(Gimbal_Info_send->SendValue[Gimbal_Yaw]);
+	VAL_LIMIT(Gimbal_Ctrl.Target.yaw_hang_Angle,-16.f,48.f);
 	
-	//CAN_Transmit
-	USER_CAN_TxMessage(&TXFrame[Gimbal_Pitch]);
-	USER_CAN_TxMessage(&TXFrame[Gimbal_Yaw]);
+	angle_Err[0] = Gimbal_Ctrl.Target.yaw_Angle - Gimbal_Ctrl.IMU->accel[0];
+  angle_Err[1] = Gimbal_Ctrl.Target.pit_Angle - Gimbal_Ctrl.IMU->accel[1];
+	
+	if((rc_ctrl.rc.s[0]==2 && rc_ctrl.rc.s[1]==1)==1 || Key_mouse_r()==true)//遥控拨杆自瞄（左下右下）
+	{
+		Vision_Flag=1;
+	}
+	else
+	{
+		Vision_Flag=0;
+	}
+   
+	if((Vision_Flag == 1) && Gimbal_Ctrl.vision->tx2->isFind == 1)
+	{
+			if(key_KF)
+			{
+				angle_Err[0] = Gimbal_Ctrl.vision->yaw * ky;
+        angle_Err[1] = Gimbal_Ctrl.vision->tx2->pit_Err[0] * kp;
+      }
+      else
+			{
+        angle_Err[0] = Gimbal_Ctrl.vision->tx2->yaw_Err[0] * ky;
+        angle_Err[1] = Gimbal_Ctrl.vision->tx2->pit_Err[0] * kp;
+      }
+			
+        VAL_LIMIT(angle_Err[0],-1.5f,1.5f);
+        VAL_LIMIT(angle_Err[1],-3.f,3.f);
+        Gimbal_Ctrl.Target.yaw_Angle = imu.accel[0];
+        Gimbal_Ctrl.Target.pit_Angle = imu.accel[1];
+  }
+
+		pit_add = Gimbal_Ctrl.IMU->accel[1] * 28.904f - 1898.9f;
+		VAL_LIMIT(pit_add, -2500, -500);
+
+		f_PID_Calculate(&Gimbal_Ctrl.yaw->pid_Angle,angle_Err[0],0);
+		f_PID_Calculate(&Gimbal_Ctrl.pitch->pid_Angle,angle_Err[1],0);
+		
+    speed_Err[0] = Gimbal_Ctrl.yaw->pid_Angle.Err[0] - Gimbal_Ctrl.IMU->gyro[0];
+
+    speed_Err[1] = Gimbal_Ctrl.pitch->pid_Angle.Err[1] - Gimbal_Ctrl.IMU->gyro[1];
+		speed_Err[1] = KalmanFilterCalc(&KF_Gimbal_Pitch, speed_Err[1]);
+
+		f_PID_Calculate(&Gimbal_Ctrl.yaw->pid_Speed, speed_Err[0],0);
+		f_PID_Calculate(&Gimbal_Ctrl.pitch->pid_Speed, speed_Err[1],0);
+		
+    Send_Value[0] = (int16_t)Gimbal_Ctrl.yaw->pid_Speed.Err[0];
+    Send_Value[1] = (int16_t)Gimbal_Ctrl.pitch->pid_Speed.Err[1];
+
+    Gimbal_Ctrl.yaw->txMsg->data[L[Gimbal_Ctrl.yaw->Data.StdId-0x205]] = (uint8_t)(Send_Value[0]>>8);
+    Gimbal_Ctrl.yaw->txMsg->data[H[Gimbal_Ctrl.yaw->Data.StdId-0x205]] = (uint8_t)(Send_Value[0]);
+    Gimbal_Ctrl.pitch->txMsg->data[L[Gimbal_Ctrl.pitch->Data.StdId-0x205]] = (uint8_t)(Send_Value[1]>>8);
+    Gimbal_Ctrl.pitch->txMsg->data[H[Gimbal_Ctrl.pitch->Data.StdId-0x205]] = (uint8_t)(Send_Value[1]);
 }

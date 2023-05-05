@@ -5,6 +5,7 @@
 #include "stdbool.h"
 #include "robot_ref.h"
 #include "pid.h"
+#include "bsp_can.h"
 
 /* 异常情况枚举 */
 typedef enum
@@ -35,7 +36,7 @@ typedef struct
 		int16_t  last_encoder;
 		float    angle;
 		uint8_t  temperature;
-	
+		uint8_t stalled;
 }General_Motor_Info_t;
 
 /* DJI电机用途枚举 */
@@ -59,6 +60,14 @@ typedef enum
     DJI_MOTOR_TYPE_NUM,
 }DJI_Motor_Type_e;
 
+typedef enum
+{
+    LOW,
+    MID,
+    HIGH,
+    CURRENT_LEVEL_NUM,
+}MOTOR_CURRENT_LEVEL;
+
 /* DJI电机封装 */
 typedef struct
 {
@@ -66,14 +75,18 @@ typedef struct
     DJI_Motor_Type_e Type;
 		DJI_Motor_usage_e Usage;
 	  PID_TypeDef_t pid_Speed,pid_Angle;
+    CAN_TxFrameTypeDef* txMsg;
 		Motor_ErrorHandler_t ERRORHandler;
+		uint8_t stalled;
+		MOTOR_CURRENT_LEVEL I_Level;
 }DJI_Motor_Info_t;
 
-
+extern DJI_Motor_Info_t DJI_Motor[DJI_MOTOR_NUM];
 
 /* Exported functions --------------------------------------------------------*/
 extern void get_DJI_Motor_Info(uint32_t *StdId, uint8_t *rxBuf,DJI_Motor_Info_t *DJI_Motor);
-extern DJI_Motor_Info_t DJI_Motor[DJI_MOTOR_NUM];
+
+
 
 #endif //MOTOR_H
 

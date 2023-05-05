@@ -6,33 +6,48 @@
 
 DJI_Motor_Info_t DJI_Motor[DJI_MOTOR_NUM]={
 		[Gimbal_Yaw]={
+				.Usage = Gimbal_Yaw,
 				.Data.StdId = 0x205,
 				.Data.CANx = CAN2,
 				.Type = DJI_GM6020,
+				.stalled = 0,
+				.txMsg = &CAN_TxMsg[_CAN2][_0x1ff],
 		},
 		
 		[Gimbal_Pitch]={
+				.Usage = Gimbal_Pitch,
 				.Data.StdId = 0x206,
 				.Data.CANx = CAN1,
 				.Type = DJI_GM6020,
+				.stalled = 0,
+				.txMsg = &CAN_TxMsg[_CAN1][_0x1ff],
 		},
 		
 		[Left_Shoot]={
+			.Usage = Left_Shoot,
 				.Data.StdId = 0x201,
 				.Data.CANx = CAN1,
 				.Type = DJI_M3508,
+				.stalled = 0,
+				.txMsg = &CAN_TxMsg[_CAN1][_0x200],
 		},
 				
 		[Right_Shoot]={
+				.Usage = Right_Shoot,
 				.Data.StdId = 0x202,
 				.Data.CANx = CAN1,
 				.Type = DJI_M3508,
+				.stalled = 0,
+				.txMsg = &CAN_TxMsg[_CAN1][_0x200],
 		},
 						
 		[Trigger]={
+				.Usage = Trigger,
 				.Data.StdId = 0x208,
 				.Data.CANx = CAN2,
 				.Type = DJI_M3508,
+				.stalled = 0,
+				.txMsg=&CAN_TxMsg[_CAN2][_0x1ff],
 		},
 
 };

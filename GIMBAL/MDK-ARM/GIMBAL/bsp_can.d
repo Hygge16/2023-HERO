@@ -40,6 +40,5 @@ gimbal/bsp_can.o: ..\Bsp\Src\bsp_can.c ..\Bsp\Inc\bsp_can.h \
   D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
   ..\Algorithm\Inc\pid.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
   ..\Bsp\Inc\bsp_rc.h ..\Component\Inc\chassis.h \
-  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
-  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
-  ..\Component\Inc\referee_Info.h
+  ..\Component\Inc\referee_Info.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h

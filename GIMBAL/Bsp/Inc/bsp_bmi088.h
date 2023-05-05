@@ -12,6 +12,9 @@
 
 #if defined(BMI088_USE_SPI)
 
+void BMI088_delay_ms(uint16_t ms);
+void BMI088_delay_us(uint16_t us);
+
 extern void BMI088_ACCEL_NS_L(void);
 extern void BMI088_ACCEL_NS_H(void);
 

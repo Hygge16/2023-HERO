@@ -425,14 +425,29 @@
               <FilePath>..\Application\Src\Gimbal_Task.c</FilePath>
             </File>
             <File>
+              <FileName>Shoot_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\Src\Shoot_Task.c</FilePath>
+            </File>
+            <File>
               <FileName>INS_Task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Application\Src\INS_Task.c</FilePath>
             </File>
             <File>
-              <FileName>Shoot_Task.c</FileName>
+              <FileName>SystemState_Task.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Application\Src\Shoot_Task.c</FilePath>
+              <FilePath>..\Application\Src\SystemState_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>Dbus_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\Src\Dbus_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>Vision_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\Src\Vision_Task.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -505,11 +520,6 @@
               <FilePath>..\Component\Src\bmi088_driver.c</FilePath>
             </File>
             <File>
-              <FileName>gimbal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Component\Src\gimbal.c</FilePath>
-            </File>
-            <File>
               <FileName>ist8310_driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Component\Src\ist8310_driver.c</FilePath>
@@ -520,14 +530,9 @@
               <FilePath>..\Component\Src\motor.c</FilePath>
             </File>
             <File>
-              <FileName>power.c</FileName>
+              <FileName>vision.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Component\Src\power.c</FilePath>
-            </File>
-            <File>
-              <FileName>shoot.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Component\Src\shoot.c</FilePath>
+              <FilePath>..\Component\Src\vision.c</FilePath>
             </File>
           </Files>
         </Group>

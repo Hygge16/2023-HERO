@@ -12,7 +12,7 @@
 static float BMI088_ACCEL_SEN = BMI088_ACCEL_3G_SEN;  //3倍采样  ACCEL
 static float BMI088_GYRO_SEN = BMI088_GYRO_2000_SEN;  //2000字节长度  GYRO
 mpu_data_t mpu_data;
-
+bmi088_real_data_t imu;
 static void BMI088_Offset_Cali(void);
 
 #if defined(BMI088_USE_SPI)

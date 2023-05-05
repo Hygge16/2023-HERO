@@ -33,6 +33,11 @@ static void PID_param_init(PID_TypeDef_t *pid,float para[PID_PARAMETER_CNT])
 		pid->Dout = 0;
     pid->Output = 0;
 }
+
+void PID_Init_ByParamArray(PID_TypeDef_t* pid,float* para)
+{
+    PID_param_init(pid,&para[PID_PARAMETER_CNT]);
+}
 /**
   * @brief  Clear the specified pid parameters
   * @param  *pid pointer to a PID_TypeDef_t structure that contains

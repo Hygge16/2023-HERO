@@ -104,6 +104,8 @@ typedef struct BMI088_REAL_DATA
     float time;
 } bmi088_real_data_t;
 
+extern bmi088_real_data_t imu;
+
 extern uint8_t BMI088_init(void);
 extern void BMI088_read(float gyro[3], float accel[3], float *temperate);
 

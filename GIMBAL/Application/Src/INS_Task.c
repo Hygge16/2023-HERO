@@ -27,6 +27,8 @@ bmi088_real_data_t bmi088_data = {0,};
 float const *ist8310_data =0;
 
 static INS_Recv_Data_t INS_Recv_Data;
+
+float INS_angle[3] = {0.0f, 0.0f, 0.0f};      //euler angle, unit rad.欧拉角 单位 rad 
 		
 static const float timing_time = 0.001f;   //tast run time , unit s.任务运行的时间 单位 s
 

@@ -19,7 +19,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
-#include "task.h"
 #include "main.h"
 #include "cmsis_os.h"
 
@@ -48,6 +47,13 @@
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
+osThreadId chassis_taskHandle;
+osThreadId gimbal_taskHandle;
+osThreadId shoot_taskHandle;
+osThreadId ins_taskHandle;
+osThreadId systemstate_tasHandle;
+osThreadId dbus_taskHandle;
+osThreadId vision_taskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -55,6 +61,13 @@ osThreadId defaultTaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
+void Chassis_Task(void const * argument);
+void Gimbal_Task(void const * argument);
+void Shoot_Task(void const * argument);
+void INS_Task(void const * argument);
+void SYSTEMSTATE_TASK(void const * argument);
+void Dbus_Task(void const * argument);
+void VISION_TASK(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -105,6 +118,34 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
+  /* definition and creation of chassis_task */
+  osThreadDef(chassis_task, Chassis_Task, osPriorityIdle, 0, 128);
+  chassis_taskHandle = osThreadCreate(osThread(chassis_task), NULL);
+
+  /* definition and creation of gimbal_task */
+  osThreadDef(gimbal_task, Gimbal_Task, osPriorityIdle, 0, 128);
+  gimbal_taskHandle = osThreadCreate(osThread(gimbal_task), NULL);
+
+  /* definition and creation of shoot_task */
+  osThreadDef(shoot_task, Shoot_Task, osPriorityIdle, 0, 128);
+  shoot_taskHandle = osThreadCreate(osThread(shoot_task), NULL);
+
+  /* definition and creation of ins_task */
+  osThreadDef(ins_task, INS_Task, osPriorityIdle, 0, 128);
+  ins_taskHandle = osThreadCreate(osThread(ins_task), NULL);
+
+  /* definition and creation of systemstate_tas */
+  osThreadDef(systemstate_tas, SYSTEMSTATE_TASK, osPriorityIdle, 0, 128);
+  systemstate_tasHandle = osThreadCreate(osThread(systemstate_tas), NULL);
+
+  /* definition and creation of dbus_task */
+  osThreadDef(dbus_task, Dbus_Task, osPriorityIdle, 0, 128);
+  dbus_taskHandle = osThreadCreate(osThread(dbus_task), NULL);
+
+  /* definition and creation of vision_task */
+  osThreadDef(vision_task, VISION_TASK, osPriorityIdle, 0, 128);
+  vision_taskHandle = osThreadCreate(osThread(vision_task), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -127,6 +168,132 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_Chassis_Task */
+/**
+* @brief Function implementing the chassis_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Chassis_Task */
+__weak void Chassis_Task(void const * argument)
+{
+  /* USER CODE BEGIN Chassis_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Chassis_Task */
+}
+
+/* USER CODE BEGIN Header_Gimbal_Task */
+/**
+* @brief Function implementing the gimbal_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Gimbal_Task */
+__weak void Gimbal_Task(void const * argument)
+{
+  /* USER CODE BEGIN Gimbal_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Gimbal_Task */
+}
+
+/* USER CODE BEGIN Header_Shoot_Task */
+/**
+* @brief Function implementing the shoot_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Shoot_Task */
+__weak void Shoot_Task(void const * argument)
+{
+  /* USER CODE BEGIN Shoot_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Shoot_Task */
+}
+
+/* USER CODE BEGIN Header_INS_Task */
+/**
+* @brief Function implementing the ins_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_INS_Task */
+__weak void INS_Task(void const * argument)
+{
+  /* USER CODE BEGIN INS_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END INS_Task */
+}
+
+/* USER CODE BEGIN Header_SYSTEMSTATE_TASK */
+/**
+* @brief Function implementing the systemstate_tas thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_SYSTEMSTATE_TASK */
+__weak void SYSTEMSTATE_TASK(void const * argument)
+{
+  /* USER CODE BEGIN SYSTEMSTATE_TASK */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END SYSTEMSTATE_TASK */
+}
+
+/* USER CODE BEGIN Header_Dbus_Task */
+/**
+* @brief Function implementing the dbus_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Dbus_Task */
+__weak void Dbus_Task(void const * argument)
+{
+  /* USER CODE BEGIN Dbus_Task */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END Dbus_Task */
+}
+
+/* USER CODE BEGIN Header_VISION_TASK */
+/**
+* @brief Function implementing the vision_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_VISION_TASK */
+__weak void VISION_TASK(void const * argument)
+{
+  /* USER CODE BEGIN VISION_TASK */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END VISION_TASK */
 }
 
 /* Private application code --------------------------------------------------*/
