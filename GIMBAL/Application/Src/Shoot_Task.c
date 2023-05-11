@@ -337,7 +337,7 @@ static void Trigger_Ctrl(void)
 				{
 					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)//发射受枪口热量限制
 					{
-						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ Key_direction * 186.f;  //((31/12)*72.f)
+						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ Key_direction * 3060.f;  //((31/12)*72.f) = 186
 						Trigger_time_num = 0;
 					}
 						IF_TRIGGER_POSITIVE = false;
@@ -348,7 +348,7 @@ static void Trigger_Ctrl(void)
 				{
 					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)
 					{
-						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	- Key_direction * 186.f;
+						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	- Key_direction * 3060.f;
 						Trigger_time_num=0;
 					}
 						IF_TRIGGER_NEGATIVE = false;

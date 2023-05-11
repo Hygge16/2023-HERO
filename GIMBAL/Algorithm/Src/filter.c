@@ -52,7 +52,7 @@ void Kalman_Init(kf_data_t *kf,float Q,float R)
  *@param	Kalman_data_t *kf ,卡尔曼结构体参数;input ,输入值
  *@return	滤波后的参数
  */
-float KalmanFilterCalc(kf_data_t *kf,float input)
+float KalmanFilterCalc(kf_data_t *kf,float input)k
 {
    //预测协方差方程：k时刻系统估算协方差 = k-1时刻的系统协方差 + 过程噪声协方差
    kf->Now_P = kf->Last_P + kf->Q;

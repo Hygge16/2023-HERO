@@ -2,7 +2,7 @@
 #include "Vision_Task.h"
 #include "SystemState_Task.h"
 #include "Gimbal_Task.h"
-#include "filter.h"
+#include "kalman.h"
 #include "bsp_rc.h"
 #include "vision.h"
 #include "bsp_uart.h"
@@ -53,7 +53,7 @@ float predict_yaw_temp;
 int key_KF=0;
 
 float yaw_feed=0.49f;
-kf_data_t KF_YAW_FEED,KF_YAW_ACCEL,KF_YAW_DIS,KF_YAW_ANGLE,KF_YAW_SEED;
+extKalman_t KF_YAW_FEED,KF_YAW_ACCEL,KF_YAW_DIS,KF_YAW_ANGLE,KF_YAW_SEED;
 float yaw_tx2_last_err=0.f;
 QueueObj yaw_Queue_speed={.queueLength=60 },yaw_Queue_accel={.queueLength=60 },yaw_Queue_dis={.queueLength=60 },yaw_Queue_angle={.queueLength=60 };
 

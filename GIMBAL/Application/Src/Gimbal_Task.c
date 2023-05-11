@@ -3,7 +3,7 @@
 #include "Gimbal_Task.h"
 #include "pid.h"
 #include "bsp_can.h"
-#include "filter.h"
+#include "kalman.h"
 #include "Vision_Task.h"
 
 int Vision_Flag;
@@ -13,8 +13,8 @@ float pit_add;
 
 int16_t SendValue[2];
 
-kf_data_t KF_Gimbal_Pitch;
-kf_data_t KF_Gimbal_Yaw;
+mpu_data_t KF_Gimbal_Pitch;
+mpu_data_t KF_Gimbal_Yaw;
 
 Gimbal_Info_t Gimbal_Ctrl=
 {
@@ -141,12 +141,12 @@ static void Gimbal_Posture_Ctrl(void)
 		f_PID_Calculate(&Gimbal_Ctrl.pitch->pid_Angle,angle_Err[1],0);
 		
     speed_Err[0] = Gimbal_Ctrl.yaw->pid_Angle.Err[0] - Gimbal_Ctrl.IMU->gyro[0];
-
-    speed_Err[1] = Gimbal_Ctrl.pitch->pid_Angle.Err[1] - Gimbal_Ctrl.IMU->gyro[1];
-		speed_Err[1] = KalmanFilterCalc(&KF_Gimbal_Pitch, speed_Err[1]);
-
+	
 		f_PID_Calculate(&Gimbal_Ctrl.yaw->pid_Speed, speed_Err[0],0);
 		f_PID_Calculate(&Gimbal_Ctrl.pitch->pid_Speed, speed_Err[1],0);
+	
+    speed_Err[1] = Gimbal_Ctrl.pitch->pid_Angle.Err[1] - Gimbal_Ctrl.IMU->gyro[1];
+		speed_Err[1] = KalmanFilter(&KF_Gimbal_Pitch, speed_Err[1]);
 		
     Send_Value[0] = (int16_t)Gimbal_Ctrl.yaw->pid_Speed.Err[0];
     Send_Value[1] = (int16_t)Gimbal_Ctrl.pitch->pid_Speed.Err[1];

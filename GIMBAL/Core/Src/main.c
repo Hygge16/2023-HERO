@@ -29,6 +29,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "bsp_can.h"
+#include "Gimbal_Task.h"
+#include "Shoot_Task.h"
+#include "kalman.h"
+#include "bsp_rc.h"
 
 /* USER CODE END Includes */
 
@@ -104,6 +109,12 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
+	bsp_can_init();
+	KalmanCreate(&KF_Mouse_X_Speed,1,60);
+  KalmanCreate(&KF_Mouse_Y_Speed,1,60);
+  Gimbal_Ctrl.state_Setup (CALIBRATING);
+  Shoot.state_Setup  (CALIBRATING);
+
 
   /* USER CODE END 2 */
 

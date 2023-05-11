@@ -57,7 +57,7 @@ typedef struct
 
 extern void KalmanCreate(extKalman_t *,float ,float );
 extern void kalman_filter_init(kalman_filter_t *, kalman_filter_init_t *);
-extern float KalmanFilter(extKalman_t* ,float );
+float KalmanFilter(extKalman_t* ,float );
 extern float*kalman_filter_calc(kalman_filter_t *,float,float);
 
 #endif //KALMAN_H

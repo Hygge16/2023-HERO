@@ -46,10 +46,11 @@ gimbal/vision.o: ..\Component\Src\vision.c \
   ..\Application\Inc\vision_Task.h ..\Algorithm\Inc\pid.h \
   D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
   D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
-  ..\Algorithm\Inc\assist.h ..\Algorithm\Inc\filter.h \
-  ..\Bsp\Inc\bsp_uart.h ..\Core\Inc\usart.h \
-  ..\Component\Inc\bmi088_driver.h ..\Application\Inc\INS_Task.h \
-  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
+  ..\Algorithm\Inc\assist.h ..\Algorithm\Inc\kalman.h \
+  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h ..\Bsp\Inc\bsp_uart.h \
+  ..\Core\Inc\usart.h ..\Component\Inc\bmi088_driver.h \
+  ..\Application\Inc\INS_Task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \

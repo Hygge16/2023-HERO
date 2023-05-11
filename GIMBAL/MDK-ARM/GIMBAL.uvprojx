@@ -395,19 +395,14 @@
               <FilePath>..\Algorithm\Src\crc.c</FilePath>
             </File>
             <File>
-              <FileName>filter.c</FileName>
+              <FileName>pid.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Algorithm\Src\filter.c</FilePath>
+              <FilePath>..\Algorithm\Src\pid.c</FilePath>
             </File>
             <File>
               <FileName>kalman.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Algorithm\Src\kalman.c</FilePath>
-            </File>
-            <File>
-              <FileName>pid.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Algorithm\Src\pid.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -802,9 +797,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>::CMSIS</GroupName>
-        </Group>
-        <Group>
           <GroupName>Middlewares/Library/DSP Library/DSP Library</GroupName>
           <GroupOption>
             <CommonProperty>
@@ -901,6 +893,9 @@
               </FileOption>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>

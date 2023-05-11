@@ -51,4 +51,14 @@ gimbal/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
   ..\Core\Inc\can.h ..\Core\Inc\dma.h ..\Core\Inc\i2c.h \
   ..\Core\Inc\spi.h ..\Core\Inc\tim.h ..\Core\Inc\usart.h \
-  ..\Core\Inc\gpio.h
+  ..\Core\Inc\gpio.h ..\Bsp\Inc\bsp_can.h ..\Component\Inc\robot_ref.h \
+  ..\Application\Inc\Gimbal_Task.h ..\Component\Inc\motor.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
+  ..\Algorithm\Inc\pid.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
+  ..\Bsp\Inc\bsp_rc.h ..\Algorithm\Inc\kalman.h \
+  ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
+  ..\Application\Inc\SystemState_Task.h ..\Component\Inc\bmi088_driver.h \
+  ..\Application\Inc\Vision_Task.h ..\Algorithm\Inc\assist.h \
+  ..\Bsp\Inc\bsp_uart.h ..\Component\Inc\vision.h \
+  ..\Application\Inc\INS_Task.h ..\Application\Inc\Shoot_Task.h

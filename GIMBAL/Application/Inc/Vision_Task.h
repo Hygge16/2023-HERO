@@ -4,7 +4,7 @@
 
 #include "pid.h"
 #include "assist.h"
-#include "filter.h"
+#include "kalman.h"
 #include "bsp_uart.h"
 #include "bmi088_driver.h"
 #include "vision.h"
@@ -59,7 +59,7 @@ extern float imu_yaw_angle;
 extern bool IF_Fire_Ready;
 
 extern int key_KF;
-extern kf_data_t KF_YAW_FEED,KF_YAW_ACCEL,KF_YAW_DIS,KF_YAW_ANGLE,KF_YAW_SEED;
+extern extKalman_t KF_YAW_FEED,KF_YAW_ACCEL,KF_YAW_DIS,KF_YAW_ANGLE,KF_YAW_SEED;
 
 
 static TickType_t get_delta_time(void);

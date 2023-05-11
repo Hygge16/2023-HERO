@@ -231,7 +231,7 @@ void get_DJI_Motor_Info(uint32_t *StdId, uint8_t *rxBuf,DJI_Motor_Info_t *DJI_Mo
 		break;
 	
 		case DJI_M3508:
-			DJI_Motor->Data.angle = encoder_to_anglesum(&DJI_Motor->Data,3591.f/187.f,8192);
+			DJI_Motor->Data.angle = encoder_to_anglesum(&DJI_Motor->Data,3591.f/3060.f,8192);//3591.f/187.f
 		break;
 		
 		case DJI_M2006:

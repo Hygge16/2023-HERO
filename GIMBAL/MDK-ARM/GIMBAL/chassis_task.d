@@ -51,13 +51,13 @@ gimbal/chassis_task.o: ..\Application\Src\Chassis_Task.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
   ..\Bsp\Inc\bsp_rc.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\stdbool.h \
-  ..\Bsp\Inc\bsp_can.h ..\Core\Inc\can.h ..\Core\Inc\main.h \
-  ..\Component\Inc\robot_ref.h ..\Application\Inc\SystemState_Task.h \
-  ..\Component\Inc\vision.h ..\Application\Inc\Vision_Task.h \
-  ..\Algorithm\Inc\pid.h D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h \
-  ..\Algorithm\Inc\assist.h ..\Algorithm\Inc\filter.h \
-  ..\Bsp\Inc\bsp_uart.h ..\Core\Inc\usart.h \
-  ..\Component\Inc\bmi088_driver.h ..\Application\Inc\INS_Task.h \
+  ..\Algorithm\Inc\kalman.h ..\Middlewares\ST\ARM\DSP\Inc\arm_math.h \
   D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\string.h \
+  D:\Keil_v5\ARM\ARMCLANG\Bin\..\include\math.h ..\Bsp\Inc\bsp_can.h \
+  ..\Core\Inc\can.h ..\Core\Inc\main.h ..\Component\Inc\robot_ref.h \
+  ..\Application\Inc\SystemState_Task.h ..\Component\Inc\vision.h \
+  ..\Application\Inc\Vision_Task.h ..\Algorithm\Inc\pid.h \
+  ..\Algorithm\Inc\assist.h ..\Bsp\Inc\bsp_uart.h ..\Core\Inc\usart.h \
+  ..\Component\Inc\bmi088_driver.h ..\Application\Inc\INS_Task.h \
   ..\Application\Inc\Shoot_Task.h ..\Component\Inc\motor.h \
   ..\Application\Inc\Gimbal_Task.h

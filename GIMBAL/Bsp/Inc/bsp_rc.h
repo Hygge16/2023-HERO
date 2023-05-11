@@ -8,6 +8,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "stm32f4xx.h"
+#include "kalman.h"
 
 
 /*鼠标速度最大值限制*/
@@ -123,6 +124,7 @@ extern Rc_Ctrl_t rc_ctrl;
 /* Exported functions --------------------------------------------------------*/
 extern void remote_control_init(void);
 extern void Remote_Control_RxEvent(UART_HandleTypeDef *huart);
+extern extKalman_t KF_Mouse_X_Speed,KF_Mouse_Y_Speed;
 extern void rc_ctrl_monitor(Rc_Ctrl_t *rc_ctrl);
 extern float Mouse_Y_Speed(void);
 extern float Mouse_X_Speed(void);

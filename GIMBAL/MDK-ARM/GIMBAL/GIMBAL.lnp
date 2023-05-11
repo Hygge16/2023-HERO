@@ -1,9 +1,8 @@
 --cpu=Cortex-M4.fp.sp
 "gimbal\assist.o"
 "gimbal\crc.o"
-"gimbal\filter.o"
-"gimbal\kalman.o"
 "gimbal\pid.o"
+"gimbal\kalman.o"
 "gimbal\chassis_task.o"
 "gimbal\gimbal_task.o"
 "gimbal\shoot_task.o"
