@@ -17,7 +17,7 @@ test：~两个小波浪~
 
 4.Don't be one of the leeches. （不要当伸手党）
 
-5。Either outstanding or out. （要么出众，要么出局）
+5.Either outstanding or out. （要么出众，要么出局）
 
 # 附录
 ----
