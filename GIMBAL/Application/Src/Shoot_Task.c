@@ -10,10 +10,10 @@
 #include "bsp_rc.h"
 #include "pid.h"
 
-int SHOOT_SPEED_16M_S = 6250,SHOOT_SPEED_10M_S = 4200;//Ó«¹âµ¯Íè´ó¸Å5560-5570±ÈÈüÊ±ºòÊÇ5515
+int SHOOT_SPEED_16M_S = 6250,SHOOT_SPEED_10M_S = 4200;//Ó«ï¿½âµ¯ï¿½ï¿½ï¿½ï¿½5560-5570ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½5515
 int Shoot_speed_mode = 0;
 float speed_add,speed_tem;
-int stuck_flag = 0;//²»¿¨Îª0£¬¿¨µ¯Îª1
+int stuck_flag = 0;//ï¿½ï¿½ï¿½ï¿½Îª0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª1
 int stall_back_flag;
 int Trigger_time_num;
 int RC_shoot_flag = 0;
@@ -54,8 +54,8 @@ float trigger_PID_Param[2][2][PID_PARAMETER_CNT] =
 /* USER CODE END Header_Shoot_Task */
 void Shoot_Task(void const * argument)
 {
-  /* USER CODE BEGIN Shoot_Task */\
-	uint32_t currentTime;
+  /* USER CODE BEGIN Shoot_Task */
+	TickType_t last_wake_time = xTaskGetTickCount(); // Use absolute timing
 	PID_Init_ByParamArray(&DJI_Motor[Left_Shoot].pid_Speed, &wheel_PID_Param[1]);
   PID_Init_ByParamArray(&DJI_Motor[Right_Shoot].pid_Speed, &wheel_PID_Param[1]);
   PID_Init_ByParamArray(&DJI_Motor[Trigger].pid_Speed,trigger_PID_Param[1][0]);
@@ -64,8 +64,6 @@ void Shoot_Task(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-		currentTime = xTaskGetTickCount();
-		
 		if(Key_B() == true)
 			Shoot_Ctrl.shoot_mode = Shoot_On;
 		else if(Key_B() == false)
@@ -75,15 +73,16 @@ void Shoot_Task(void const * argument)
 		Trigger_Ctrl();
 		trigger_Stall_Handle();	
 		
-    osDelay(1);
+    // Optimized: Use vTaskDelayUntil for consistent 1ms timing
+    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(1));
   }
   /* USER CODE END Shoot_Task */
 }
 
 static void shoot_State_Handoff(DEVICE_STATE state)
 {
-    if(state!=Shoot.state){//·ÀÖ¹Ñ­»·µ÷ÓÃ³ö´í
-    //²ÎÊýÖØÖÃ£¨ÊÜµ±Ç°Ä£Ê½Ó°Ïì£©
+    if(state!=Shoot.state){//ï¿½ï¿½Ö¹Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½Üµï¿½Ç°Ä£Ê½Ó°ï¿½ì£©
 		Shoot.state=state;
         PID_Init_ByParamArray(&Shoot.wheel_L->pid_Speed, &wheel_PID_Param[state]);
         PID_Init_ByParamArray(&Shoot.wheel_R->pid_Speed, &wheel_PID_Param[state]);
@@ -109,7 +108,7 @@ static void Wheel_Ctrl(void)
   int16_t send_Value[2];
   float speed_Err[2] = {0,},target_speed;
 
-	if(Chassis_Ctrl.ctrl == 1)//Ò£¿ØÄ£Ê½
+	if(Chassis_Ctrl.ctrl == 1)//Ò£ï¿½ï¿½Ä£Ê½
 	{
 		if(rc_ctrl.rc.s[1] == 2 && rc_ctrl.rc.s[0] == 3)
 			Shoot_speed_mode=0;
@@ -128,7 +127,7 @@ static void Wheel_Ctrl(void)
 		speed_Err[0] = (  target_speed - Shoot_Ctrl.wheel_L->Data.velocity);
 		speed_Err[1] = ( -target_speed - Shoot_Ctrl.wheel_R->Data.velocity);
 	}
-	else if(Chassis_Ctrl.ctrl == 2)//¼üÅÌÄ£Ê½
+	else if(Chassis_Ctrl.ctrl == 2)//ï¿½ï¿½ï¿½ï¿½Ä£Ê½
   {
 		if(Shoot.shoot_mode == Shoot_On)
 		{
@@ -183,8 +182,8 @@ static void Wheel_Ctrl(void)
 
 static float Temp_BURST_Fix(void)
 {
-  float temp_scope = 35;//¼ÙÉè±ä»¯·¶Î§Îª35ÉãÊÏ¶È
-  float temp_low = 35;//³õÊ¼ÎÂ¶ÈÉè¶¨Îª35ÉãÊÏ¶È
+  float temp_scope = 35;//ï¿½ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½Î§Îª35ï¿½ï¿½ï¿½Ï¶ï¿½
+  float temp_low = 35;//ï¿½ï¿½Ê¼ï¿½Â¶ï¿½ï¿½è¶¨Îª35ï¿½ï¿½ï¿½Ï¶ï¿½
   float res = 0;
   float temp_real;
   
@@ -202,8 +201,8 @@ static float Temp_BURST_Fix(void)
 
 static float Temp_RATE_Fix(void)
 {
-  float temp_scope = 15;//¼ÙÉè±ä»¯·¶Î§Îª25ÉãÊÏ¶È
-  float temp_low = 29;//³õÊ¼ÎÂ¶ÈÉè¶¨Îª35ÉãÊÏ¶È
+  float temp_scope = 15;//ï¿½ï¿½ï¿½ï¿½ä»¯ï¿½ï¿½Î§Îª25ï¿½ï¿½ï¿½Ï¶ï¿½
+  float temp_low = 29;//ï¿½ï¿½Ê¼ï¿½Â¶ï¿½ï¿½è¶¨Îª35ï¿½ï¿½ï¿½Ï¶ï¿½
   float res = 0;
   float temp_real;
 	
@@ -229,10 +228,10 @@ static float SpeedAdapt_10M(float real_S , float min_S, float max_S,float up_num
 {
 	float res=0;
 
-  if(real_S < 8) res+=2*up_num;//ÉäËÙÌ«µÍ
-	else if(real_S < min_S && real_S > 8) res+=up_num;//ÉäËÙÆ«µÍ
+  if(real_S < 8) res+=2*up_num;//ï¿½ï¿½ï¿½ï¿½Ì«ï¿½ï¿½
+	else if(real_S < min_S && real_S > 8) res+=up_num;//ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
   else if(real_S >= min_S && real_S <= max_S )res = 0;
-	else if(real_S > max_S) res -= down_num;//ÉäËÙÆ«¸ß
+	else if(real_S > max_S) res -= down_num;//ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
 	
   return res;
 }
@@ -241,10 +240,10 @@ static float SpeedAdapt_16M(float real_S , float min_S, float max_S,float up_num
 {
 	float res=0;
 
-  if(real_S < 14.3f) res+=1.8f*up_num;//ÉäËÙÌ«µÍ
-	else if(real_S < min_S && real_S > 14.3f) res+=up_num;//ÉäËÙÆ«µÍ
+  if(real_S < 14.3f) res+=1.8f*up_num;//ï¿½ï¿½ï¿½ï¿½Ì«ï¿½ï¿½
+	else if(real_S < min_S && real_S > 14.3f) res+=up_num;//ï¿½ï¿½ï¿½ï¿½Æ«ï¿½ï¿½
   else if(real_S >= min_S && real_S <= max_S )res = 0;
-	else if(real_S > max_S && real_S <15.5f) res -= down_num;//ÉäËÙÉÔÎ¢Æ«¸ß
+	else if(real_S > max_S && real_S <15.5f) res -= down_num;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¢Æ«ï¿½ï¿½
 	else if(real_S >15.5f)res -=1.5f * down_num;
 	
   return res;
@@ -299,7 +298,7 @@ static void Trigger_Ctrl(void)
 		}
 		else if(DJI_Motor[Trigger].stalled==0)
 		{
-			if(Chassis_Ctrl.ctrl == 1 && rc_ctrl.rc.s[1] == 2)//Ò£¿ØÆ÷¿ØÖÆ
+			if(Chassis_Ctrl.ctrl == 1 && rc_ctrl.rc.s[1] == 2)//Ò£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			{
 					if(Trigger_time_num < 300)
 				{
@@ -312,7 +311,7 @@ static void Trigger_Ctrl(void)
 					if(rc_ctrl.rc.ch[1] < 0)
 						RC_direction = -1;
 
-					Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ RC_direction * 186.f;//}12±È31
+					Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ RC_direction * 186.f;//}12ï¿½ï¿½31
 					Trigger_time_num = 0;
 					RC_shoot_flag = 1;
 				}
@@ -320,7 +319,7 @@ static void Trigger_Ctrl(void)
 					RC_shoot_flag = 0;
 			}
 		}
-		else if(Chassis_Ctrl.ctrl == 2 && Shoot.shoot_mode == Shoot_On)//¼üÅÌ¿ØÖÆ£¬µãÉä
+		else if(Chassis_Ctrl.ctrl == 2 && Shoot.shoot_mode == Shoot_On)//ï¿½ï¿½ï¿½Ì¿ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			if(Trigger_time_num < 300)
 			{
@@ -333,9 +332,9 @@ static void Trigger_Ctrl(void)
 				if(Key_R() == false)
 					IF_TRIGGER_NEGATIVE = true;
 					
-				if(IF_TRIGGER_POSITIVE == true && Key_shoot_flag == 0)//Êó±ê×ó¼ü´òµ¯£¬²¦µ¯ÅÌÕý×ª
+				if(IF_TRIGGER_POSITIVE == true && Key_shoot_flag == 0)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½òµ¯£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª
 				{
-					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)//·¢ÉäÊÜÇ¹¿ÚÈÈÁ¿ÏÞÖÆ
+					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					{
 						Shoot.trigger_Angle = DJI_Motor[Trigger].Data.angle	+ Key_direction * 3060.f;  //((31/12)*72.f) = 186
 						Trigger_time_num = 0;
@@ -344,7 +343,7 @@ static void Trigger_Ctrl(void)
 						Key_shoot_flag = 1;
 				}
 
-				if(IF_TRIGGER_NEGATIVE == true && Key_shoot_flag == 0)//°´¼üRÍËµ¯£¬²¦µ¯ÅÌ·´×ª
+				if(IF_TRIGGER_NEGATIVE == true && Key_shoot_flag == 0)//ï¿½ï¿½ï¿½ï¿½Rï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì·ï¿½×ª
 				{
 					if(robot.shooter_id1_42mm.cooling_limit - robot.cooling_heat >= 100)
 					{

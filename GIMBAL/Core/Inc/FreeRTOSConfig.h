@@ -61,10 +61,10 @@
 #define configUSE_IDLE_HOOK                      0
 #define configUSE_TICK_HOOK                      0
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
-#define configTICK_RATE_HZ                       ((TickType_t)1000)
+#define configTICK_RATE_HZ                       ((TickType_t)1000)  // Keep 1ms for high precision control
 #define configMAX_PRIORITIES                     ( 7 )
-#define configMINIMAL_STACK_SIZE                 ((uint16_t)128)
-#define configTOTAL_HEAP_SIZE                    ((size_t)15360)
+#define configMINIMAL_STACK_SIZE                 ((uint16_t)192)     // Increased from 128 for safety
+#define configTOTAL_HEAP_SIZE                    ((size_t)20480)     // Increased from 15KB to 20KB
 #define configMAX_TASK_NAME_LEN                  ( 16 )
 #define configUSE_16_BIT_TICKS                   0
 #define configUSE_MUTEXES                        1

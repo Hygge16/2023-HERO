@@ -118,33 +118,33 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* definition and creation of chassis_task */
-  osThreadDef(chassis_task, Chassis_Task, osPriorityIdle, 0, 128);
-  chassis_taskHandle = osThreadCreate(osThread(chassis_task), NULL);
-
-  /* definition and creation of gimbal_task */
-  osThreadDef(gimbal_task, Gimbal_Task, osPriorityIdle, 0, 128);
-  gimbal_taskHandle = osThreadCreate(osThread(gimbal_task), NULL);
-
-  /* definition and creation of shoot_task */
-  osThreadDef(shoot_task, Shoot_Task, osPriorityIdle, 0, 128);
-  shoot_taskHandle = osThreadCreate(osThread(shoot_task), NULL);
-
-  /* definition and creation of ins_task */
-  osThreadDef(ins_task, INS_Task, osPriorityIdle, 0, 128);
+  /* definition and creation of ins_task - HIGHEST PRIORITY for sensor fusion */
+  osThreadDef(ins_task, INS_Task, osPriorityHigh, 0, 256);
   ins_taskHandle = osThreadCreate(osThread(ins_task), NULL);
 
-  /* definition and creation of systemstate_tas */
-  osThreadDef(systemstate_tas, SYSTEMSTATE_TASK, osPriorityIdle, 0, 128);
+  /* definition and creation of gimbal_task - HIGH PRIORITY for control loop */
+  osThreadDef(gimbal_task, Gimbal_Task, osPriorityAboveNormal, 0, 256);
+  gimbal_taskHandle = osThreadCreate(osThread(gimbal_task), NULL);
+
+  /* definition and creation of shoot_task - HIGH PRIORITY for control loop */
+  osThreadDef(shoot_task, Shoot_Task, osPriorityAboveNormal, 0, 256);
+  shoot_taskHandle = osThreadCreate(osThread(shoot_task), NULL);
+
+  /* definition and creation of chassis_task - NORMAL PRIORITY */
+  osThreadDef(chassis_task, Chassis_Task, osPriorityNormal, 0, 256);
+  chassis_taskHandle = osThreadCreate(osThread(chassis_task), NULL);
+
+  /* definition and creation of systemstate_tas - BELOW NORMAL PRIORITY */
+  osThreadDef(systemstate_tas, SYSTEMSTATE_TASK, osPriorityBelowNormal, 0, 192);
   systemstate_tasHandle = osThreadCreate(osThread(systemstate_tas), NULL);
 
-  /* definition and creation of dbus_task */
-  osThreadDef(dbus_task, Dbus_Task, osPriorityIdle, 0, 128);
-  dbus_taskHandle = osThreadCreate(osThread(dbus_task), NULL);
-
-  /* definition and creation of vision_task */
-  osThreadDef(vision_task, VISION_TASK, osPriorityIdle, 0, 128);
+  /* definition and creation of vision_task - BELOW NORMAL PRIORITY */
+  osThreadDef(vision_task, VISION_TASK, osPriorityBelowNormal, 0, 192);
   vision_taskHandle = osThreadCreate(osThread(vision_task), NULL);
+
+  /* definition and creation of dbus_task - LOW PRIORITY for communication */
+  osThreadDef(dbus_task, Dbus_Task, osPriorityLow, 0, 192);
+  dbus_taskHandle = osThreadCreate(osThread(dbus_task), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
