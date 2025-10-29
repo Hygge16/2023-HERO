@@ -1,3 +1,2 @@
 # 2023-HERO
-来不及了，快上车
-冲冲冲
+In 2023, we commemorate imperfect works.
